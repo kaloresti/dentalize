@@ -17,7 +17,7 @@ class UserController extends Controller
      * login api 
      * 
      * @return \Illuminate\Http\Response 
-     */ 
+     */    
     public function login(){ 
         info($request->getContent());
         if(Auth::attempt(['email' => request('email'), 'password' => request('password')])){ 
