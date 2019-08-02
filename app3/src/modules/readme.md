@@ -1,0 +1,3 @@
+## Contextos delimitados
+
+- Deslogado
