@@ -7,6 +7,48 @@ import DentalizeService from './src/modules/services/DentalizeService';
 import {TokenManager} from './src/modules/infra/TokenManager';
 import { TextInputMask } from 'react-native-masked-text';
 import {CirclesLoader, PulseLoader, TextLoader, DotsLoader} from 'react-native-indicator';
+import SectionedMultiSelect from 'react-native-sectioned-multi-select';
+import { ScrollView } from 'react-native-gesture-handler';
+
+const items = [
+  // this is the parent or 'item'
+  {
+    name: 'Fruits',
+    id: 0,
+    // these are the children or 'sub items'
+    children: [
+      {
+        name: 'Apple',
+        id: 10,
+      },
+      {
+        name: 'Strawberry',
+        id: 17,
+      },
+      {
+        name: 'Pineapple',
+        id: 13,
+      },
+      {
+        name: 'Banana',
+        id: 14,
+      },
+      {
+        name: 'Watermelon',
+        id: 15,
+      },
+      {
+        name: 'Kiwi fruit',
+        id: 16,
+      },
+    ],
+  },
+ /*  {
+    // next parent item
+   ...
+  }, */
+
+];
 
 export default class CadDentista extends Component {
     static navigationOptions = {
@@ -53,10 +95,15 @@ export default class CadDentista extends Component {
       c_password: "",
       errors: [],
       modalVisible: false,
-      activity: false
-      
+      activity: false,
+      selectedEspecialidades: []
     }
   
+    onSelectedEspecialidadesChange = (selectedEspecialidades) => {
+      this.setState({ selectedEspecialidades });
+      console.log(selectedEspecialidades);
+    };
+
     setModalVisible(visible) {
       this.setState({modalVisible: visible});
     }
@@ -80,6 +127,7 @@ export default class CadDentista extends Component {
               cro_uf:this.state.cro_uf,
               cpf:this.state.cpf,
               email:this.state.email,
+              specialities: this.state.selectedEspecialidades,
               password:this.state.password,
               c_password:this.state.c_password
             }),
@@ -124,8 +172,9 @@ export default class CadDentista extends Component {
         } else {
             return (
                 
+                <ScrollView>
                 <KeyboardAvoidingView behavior="padding" enabled  style={styles.container}>
-          
+                  
                   <Modal
                     animationType="slide"
                     transparent={false}
@@ -215,6 +264,20 @@ export default class CadDentista extends Component {
                       //onChangeText={this.handleChange('cpf')}
                       style={styles.formTextField} placeholder="CPF" />
           
+                  <Text style={[styles.textDivisor, {color: 'yellow'}]}>Suas Especialidades</Text>
+                  <View>
+                    <SectionedMultiSelect
+                      items={items}     
+                      uniqueKey="id"
+                      subKey="children"
+                      selectText="Escolha as especialidades"
+                      showDropDowns={true}
+                      readOnlyHeadings={true}
+                      onSelectedItemsChange={this.onSelectedEspecialidadesChange}
+                      selectedItems={this.state.selectedEspecialidades}
+                    />
+                  </View>
+
                   <TextInput 
                       maxLength = {150}
                       onChangeText={this.handleChange('email')}
@@ -236,6 +299,7 @@ export default class CadDentista extends Component {
                     <Text style={{padding:15, color:"white"}}>Cadastrar</Text>
                   </TouchableOpacity>
                 </KeyboardAvoidingView>
+                </ScrollView>
               ); 
         }
     }

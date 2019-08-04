@@ -30,6 +30,7 @@ class Paciente extends Component {
     );
   }
 }
+
 const items = [
   // this is the parent or 'item'
   {
@@ -37,7 +38,7 @@ const items = [
     id: 0,
     // these are the children or 'sub items'
     children: [
-      {
+      /* {
         name: 'Apple',
         id: 10,
       },
@@ -60,7 +61,7 @@ const items = [
       {
         name: 'Kiwi fruit',
         id: 16,
-      },
+      }, */
     ],
   },
  /*  {
@@ -69,6 +70,8 @@ const items = [
   }, */
 
 ];
+
+
 class Consultorio extends Component {
   constructor(props) {
     super(props);
@@ -80,22 +83,32 @@ class Consultorio extends Component {
   };
 
   state = {
+    plans: [
+      {
+        name: "Planos Odontológicos",
+        id: 0,
+        children: []
+      }
+    ],
     errors: [],
     modalVisible: false,
     modalNewVisible: false,
     activity: false,
     timeInput: '',
-
-    nome:'',
-    cep: '',
-    uf: '',
-    municipio: '',
-    bairro: '',
-    logradouro: '',
-    numero: '',
-    celular: '',
-    telefone: '',
+    consultorios: [],
+    name:'',
+    postal_code: '',
+    city: '',
+    district: '',
+    address: '',
+    complementation: '',
+    number: '',
+    celphone: '',
+    phone: '',
     email: '',
+    numberVisivle: false,
+    complementationVisible: false,
+
     segundaDataInicial: '00:00',
     segundaDataFinal: '00:00', 
     tercaDataInicial: '00:00',
@@ -126,13 +139,14 @@ class Consultorio extends Component {
     domingoDataInicialVisible:  false,
     domingoDataFinalVisible:  false ,
 
-    selectedEspecialidades: [],
     selectedPlanos: [],
   }
   
   onSelectedPlanosChange = (selectedPlanos) => {
     this.setState({ selectedPlanos });
+    //console.log(selectedPlanos);
   };
+
   onSelectedEspecialidadesChange = (selectedEspecialidades) => {
     this.setState({ selectedEspecialidades });
   };
@@ -143,7 +157,7 @@ class Consultorio extends Component {
   };
 
   hideDateTimePicker = (field) => {
-    console.log(field);
+    //console.log(field);
     this.setState({ [field]: false , timeInput: field});
   };
 
@@ -163,6 +177,68 @@ class Consultorio extends Component {
   }
 
   componentDidMount(){
+    this.setState({activity: true});
+    fetch("http://192.168.0.20:81/api/list_officers_for_doctors/1", { 
+        method: "GET",  
+        headers: {  
+          'Accept' : 'application/json',
+          'Content-Type': 'application/json; charset=utf-8' 
+        } 
+    }).then((response) => response.json())
+        .then(async responseJson => {
+            //this.setState({activity: false});
+        if(responseJson.erro){
+            this.setState({
+              modalVisible: true,
+              errors: ["Erro ao carregar consultórios"]
+              
+            });
+        } else { 
+          this.setState({
+            consultorios: responseJson.data
+          });
+        }
+
+        fetch("http://192.168.0.20:81/api/list_plans", { 
+          method: "GET",  
+          headers: {  
+            'Accept' : 'application/json',
+            'Content-Type': 'application/json; charset=utf-8' 
+          } 
+        }).then((response) => response.json())
+            .then(async responseJson => {
+                this.setState({activity: false});
+            if(responseJson.erro){
+                this.setState({
+                  modalVisible: true,
+                  errors: ["Erro ao carregar planos"]
+                  
+                });
+            } else {
+              this.setState({
+                plans: [
+                  {
+                    name: "Planos Odontológicos",
+                    id: 0,
+                    children: responseJson.data
+                  }
+                ],
+               
+              });
+            }
+        })
+        .catch((error) => {
+            this.setState({activity: false});
+            console.error(error);
+        }); // fim do fetch
+
+    })
+    .catch((error) => {
+        this.setState({activity: false});
+        console.error(error);
+    }); // fim do fetch
+
+
   }
 
   handleChange = nomeDoCampo => {
@@ -171,16 +247,57 @@ class Consultorio extends Component {
       };
   }
 
+  handleOfficersCreate = () => {
+    this.setState({activity: true});
+    fetch("http://192.168.0.20:81/api/register_officer", {
+        method: "POST",  
+          body: JSON.stringify({
+            name: this.state.name,
+            postal_code:this.state.postal_code,
+            uf: this.state.uf,
+            city:this.state.city,
+            district:this.state.district,
+            number:this.state.number,
+            address: this.state.address,
+            complementation: this.state.complementation,
+            phone:this.state.phone,
+            celphone:this.state.celphone,
+            email: this.state.email,
+            plans: this.state.selectedPlanos
+        }),
+        headers: {  
+          'Accept' : 'application/json',
+          'Content-Type': 'application/json; charset=utf-8' 
+        } 
+    }).then((response) => response.json())
+        .then(async responseJson => {
+            this.setState({activity: false});
+        if(responseJson.error){
+            this.setState({
+              modalVisible: true,
+              errors: responseJson.error
+            });
+        } else {
+          this.setState({modalNewVisible : false});
+          this.props.navigation.navigate("Consultorios");
+        }
+    })
+    .catch((error) => {
+        this.setState({activity: false});
+        console.error(error);
+    });
+  };
+
   render(){
     const {time} = this.state;
     if(this.state.activity === true)
     {
-        return(
-            <View style={styles.containerLoading}>
-                <CirclesLoader color={'#01142F'}/>
-                <TextLoader text="Processando ..." />
-            </View>
-        ); 
+      return(
+          <View style={styles.containerLoading}>
+              <CirclesLoader color={'#01142F'}/>
+              <TextLoader text="Processando ..." />
+          </View>
+      ); 
     } else {
       return (
           <KeyboardAvoidingView behavior="padding" enabled style={styles.containerForm}>
@@ -229,7 +346,7 @@ class Consultorio extends Component {
                       flex: 1,
                       backgroundColor: '#01142F',
                       //alignItems: 'center',
-                      justifyContent: 'center',
+                      justifyContent: 'center', 
                       paddingTop:20,
                       paddingLeft: 50,
                       paddingRight: 50
@@ -237,32 +354,87 @@ class Consultorio extends Component {
                       {/* <Image style={styles.appImageMd} source={{ uri: 'http://odontologiadrkikuchi.com.br/wp-content/uploads/2017/03/cropped-tooth-icon.png' }} /> */}
                       <Text style={[styles.textDivisor, {color: 'yellow'}]}>Dados Gerais</Text>
                       <TextInput 
-                        onChangeText={this.handleChange('nome')}
-                        style={styles.formTextField} placeholder="Nome do Consultório / Clínica"  maxLength = {10}></TextInput>
+                        onChangeText={this.handleChange('name')}
+                        style={styles.formTextField} placeholder="Nome do Consultório / Clínica"  maxLength = {150}></TextInput>
+                      
+                      <Text style={[styles.textDivisor, {color: 'yellow'}]}>Endereço / Localização</Text>
                       
                       <TextInputMask
-                          value={this.state.cep}
-                          type={'custom'}
-                          options={{
-                            /**
-                             * mask: (String | required | default '')
-                             * the mask pattern
-                             * 9 - accept digit.
-                             * A - accept alpha.
-                             * S - accept alphanumeric.
-                             * * - accept all, EXCEPT white space.
-                            */
-                            mask: '99.999-999'
-                          }}
-                          onChangeText={text => {
+                          value={this.state.postal_code}
+                          type={'zip-code'}
+                          includeRawValueInChangeText={true}
+                          onChangeText={(maskedText, rawText) => {
                             this.setState({
-                              cep: text
+                              postal_code: rawText
                             })
+                            
+                            if(maskedText.length == 9 ) 
+                            {
+                             
+                              this.setState({
+                                activity: true,
+                                postal_code: rawText
+                              });
+                              //console.warn(this.state.postal_code);
+                              fetch("https://viacep.com.br/ws/"+rawText+"/json/", { 
+                                  method: "GET",  
+                                  headers: {  
+                                    'Accept' : 'application/json',
+                                    'Content-Type': 'application/json; charset=utf-8' 
+                                  } 
+                              }).then((response) => response.json())
+                                  .then(async responseJson => {
+                                      this.setState({activity: false});
+                                  if(responseJson.erro){
+                                      this.setState({
+                                        modalVisible: true,
+                                        errors: ["Desculpe, não conseguimos encontrar este CEP"],
+                                        numberVisivle: false,
+                                        complementationVisible: false,
+                                        postal_code: "",
+                                        district: "",
+                                        city: "",
+                                        address: "",
+                                        uf: "",
+                                      });
+                                  } else {
+                                      this.setState({
+                                        postal_code: responseJson.cep,
+                                        district: responseJson.bairro,
+                                        city: responseJson.localidade,
+                                        address: responseJson.logradouro,
+                                        uf: responseJson.uf,
+                                        numberVisivle: true,
+                                        complementationVisible: true,
+                                      });
+                                  }
+                              })
+                              .catch((error) => {
+                                  this.setState({activity: false});
+                                  console.error(error);
+                              }); // fim do fetch
+                            }
                           }}
                           //onChangeText={this.handleChange('cpf')}
                           style={styles.formTextField} placeholder="CEP" />
+                      <Text style={[styles.textDivisor, {color: 'yellow'}]}>{this.state.postal_code} - {this.state.uf} - {this.state.city}</Text>
+                      <Text style={[styles.textDivisor, {color: 'yellow'}]}>{this.state.address}</Text>
+                      <TextInput 
+                        editable={this.state.numberVisivle}
+                        onChangeText={this.handleChange('number')}
+                        style={styles.formTextField} placeholder="Numero"  maxLength = {10}></TextInput>
+                        
+                     <TextInput 
+                        value={this.state.complementation}
+                        editable={this.state.complementationVisible}
+                        onChangeText={this.handleChange('complementation')}
+                        style={styles.formTextField} placeholder="Complemento"  maxLength = {20}></TextInput>
+                       
+
+                      <Text style={[styles.textDivisor, {color: 'yellow'}]}>Contato</Text>
+                      
                       <TextInputMask
-                          value={this.state.celular}
+                          value={this.state.celphone}
                           type={'cel-phone'}
                           options={{
                             maskType: 'BRL',
@@ -271,13 +443,13 @@ class Consultorio extends Component {
                           }}
                           onChangeText={text => {
                             this.setState({
-                              celular: text
+                              celphone: text
                             })
                           }}
                           //onChangeText={this.handleChange('cpf')}
                           style={styles.formTextField} placeholder="celular" />
                       <TextInputMask
-                          value={this.state.telefone}
+                          value={this.state.phone}
                           type={'custom'}
                           options={{
                             /**
@@ -292,7 +464,7 @@ class Consultorio extends Component {
                           }}
                           onChangeText={text => {
                             this.setState({
-                              telefone: text
+                              phone: text
                             })
                           }}
                           //onChangeText={this.handleChange('cpf')}
@@ -449,24 +621,10 @@ class Consultorio extends Component {
                             />
                         </View>
                       </View> 
-                      
-                      <Text style={[styles.textDivisor, {color: 'yellow'}]}>Especialidades</Text>
-                      <View>
-                        <SectionedMultiSelect
-                          items={items}     
-                          uniqueKey="id"
-                          subKey="children"
-                          selectText="Escolha as especialidades"
-                          showDropDowns={true}
-                          readOnlyHeadings={true}
-                          onSelectedItemsChange={this.onSelectedEspecialidadesChange}
-                          selectedItems={this.state.selectedEspecialidades}
-                        />
-                      </View>
                       <Text style={[styles.textDivisor, {color: 'yellow'}]}>Planos de atendimento</Text>
                       <View> 
                         <SectionedMultiSelect
-                          items={items}     
+                          items={this.state.plans}     
                           uniqueKey="id"
                           subKey="children"
                           selectText="Escolha os planos de atendimento"
@@ -476,12 +634,11 @@ class Consultorio extends Component {
                           selectedItems={this.state.selectedPlanos}
                         />
                       </View>
-                     
-                      
+                                           
                       <TouchableHighlight
                         style={styles.btnSave}
                         onPress={() => {
-                          this.setModalNewVisible(!this.state.modalNewVisible);
+                          this.handleOfficersCreate();
                         }}>
                           <Text>Salvar</Text>
                       </TouchableHighlight>
@@ -495,22 +652,99 @@ class Consultorio extends Component {
                   </View>
                   </ScrollView>
               </Modal>
-              <View style={{justifyContent:'flex-start', flexDirection: 'row'}}>
-                {/* <Image style={{padding: 5, width:20, height:20,  marginTop: 5}} source={{ uri: 'http://odontologiadrkikuchi.com.br/wp-content/uploads/2017/03/cropped-tooth-icon.png' }} /> */}
-                <Text style={{color: 'white',
-                  fontWeight: 'bold',
-                  fontSize: 20,
-                  textShadowColor: 'darkblue',
-                  letterSpacing: 5}}>Consultórios</Text>
-              </View>
+              
               <TouchableHighlight
-                style={styles.btn}
+                style={[styles.btnNew, {backgroundColor: "#052555"}]}
                 onPress={() => {
                   this.setModalNewVisible(true);
                 }}>
-                  <Text>Novo consultório</Text>
+                  <View>
+                    <Text style={{alignSelf:"center"}}>
+                      <Ionicons name="ios-add-circle" size={40} color={"#5199FF"}  />
+                    </Text>
+                  </View>
               </TouchableHighlight>
+
+              <Text style={[styles.textDivisor, {color: 'yellow'}]}>clique para cadastrar um consultório</Text>
+              <ScrollView>
+                {this.state.consultorios.map((consultorio, i) => { 
+                    return <View 
+                            key={consultorio.id}
+                            style={{
+                              backgroundColor: "#052555",
+                              borderRadius: 10,
+                              padding:15,
+                              marginTop:10,
+                              alignSelf: "center",
+                              alignItems: "stretch",
+                              flex: 1,
+                              flexDirection: 'column',
+                              justifyContent: 'center',
+                            }}> 
+                            {/* <View style={{backgroundColor: 'powderblue',  alignItems: "stretch",}}> */}
+                              <Text style={{alignSelf:"center"}}>
+                              <Ionicons name="md-briefcase" size={50} color={"#5199FF"}  />
+                              </Text>
+                              <Text style={{
+                                alignSelf: 'center',
+                                flex: 1,
+                                color: 'white',
+                                fontSize:14,
+                                fontWeight: 'bold'
+                              }}> {consultorio.name}</Text>
+                            
+                                <Text style={[styles.textDivisor, {marginTop:10, alignSelf:'center'}]}><Ionicons name="md-map" size={12} color={"#5199FF"} /> {consultorio.city} - {consultorio.address}, {consultorio.number}</Text>
+                                
+                                <Text style={[styles.textDivisor, {marginTop:10, alignSelf:'center'}]}> <Ionicons name="md-phone-portrait" size={12} color={"#5199FF"} /> {consultorio.celphone} <Ionicons name="md-mail" size={12} color={"#5199FF"} /> {consultorio.email}</Text>
+                                
+                                <View 
+                                  key={consultorio.id}
+                                  style={{
+                                    backgroundColor: "#052555",
+                                    borderRadius: 10,
+                                    padding:15,
+                                    marginTop:10,
+                                    alignSelf: "center",
+                                    alignItems: "center",
+                                    flex: 1,
+                                    flexDirection: 'row',
+                                    justifyContent: 'center',
+                                  }}> 
+                                <TouchableHighlight
+                                  style={[styles.btnOptionsEdit, {marginLeft:10}]}
+                                  onPress={() => {
+                                    this.setModalNewVisible(true);
+                                  }}>
+                                    <View>
+                                      <Ionicons name="md-brush" size={18} color={"#FFFFFF"} />
+                                    </View>
+                                </TouchableHighlight>
+                                <TouchableHighlight
+                                  style={[styles.btnOptionsCalendar, {marginLeft:10}]}
+                                  onPress={() => {
+                                    this.setModalNewVisible(true);
+                                  }}>
+                                    <View>
+                                      <Ionicons name="md-calendar" size={18} color={"#FFFFFF"} />
+                                    </View>
+                                </TouchableHighlight>
+                                <TouchableHighlight
+                                  style={[styles.btnOptionsDelete, {marginLeft:10}]}
+                                  onPress={() => {
+                                    this.setModalNewVisible(true);
+                                  }}>
+                                   <View>
+                                      <Ionicons name="md-trash" size={18} color={"#FFFFFF"} />
+                                    </View>
+                                </TouchableHighlight>
+                              </View>
+                               
+                             {/*  </View> */}
+                            </View>
+                })}
+              </ScrollView>
           </KeyboardAvoidingView>
+          
       );
     }
   }
@@ -819,8 +1053,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#5199FF',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingLeft: 50,
-    paddingRight: 50
+    paddingLeft: 20,
+    paddingRight: 20
   },
   containerAgenda: {
     flex: 1,
@@ -836,8 +1070,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#5199FF',
     alignItems: 'center',
     //justifyContent: 'center',
-    paddingLeft: 50,
-    paddingRight: 50,
+    paddingLeft: 20,
+    paddingRight: 20,
     paddingTop: 50
   },
   containerLoading: {
@@ -864,9 +1098,36 @@ const styles = StyleSheet.create({
   },
   btn: {
     backgroundColor: "#3095f3",
-    borderRadius: 10,
+    borderRadius: 30,
     padding: 10,
     alignSelf: "stretch",
+    justifyContent: "center",
+    alignItems: "center"
+  },
+  btnOptionsEdit: {
+    backgroundColor: "#7EB3FF",
+    borderRadius: 40,
+    width:50,
+    padding: 10,
+    //alignSelf: "stretch",
+    justifyContent: "center",
+    alignItems: "center"
+  },
+  btnOptionsDelete: {
+    backgroundColor: "#B40A1B",
+    borderRadius: 40,
+    padding: 10,
+    width:50,
+    //alignSelf: "stretch",
+    justifyContent: "center",
+    alignItems: "center"
+  },
+  btnOptionsCalendar: {
+    backgroundColor: "#FF6B00",
+    borderRadius: 40,
+    padding: 10,
+    width:50,
+    //alignSelf: "stretch",
     justifyContent: "center",
     alignItems: "center"
   },
@@ -898,6 +1159,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginTop: 10
+  },
+  btnNew: {
+    //backgroundColor: "#E20338",
+    borderRadius: 55,
+    padding: 5,
+    width: 50,
+    //alignSelf: "stretch",
+    justifyContent: "center",
+    alignItems: "center",
+    //marginTop: 10
   },
   btnSave: {
     backgroundColor: "#45D09E",

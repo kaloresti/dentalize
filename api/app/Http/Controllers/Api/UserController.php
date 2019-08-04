@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\User; 
-use App\Doctor; 
 use Illuminate\Support\Facades\Auth; 
 use Validator;
+
+use App\User; 
+use App\Doctor; 
+use App\DoctorHasSpecialities;
 
 class UserController extends Controller
 {
@@ -21,24 +23,20 @@ class UserController extends Controller
     public function login(Request $request){ 
         
         $input = json_decode($request->getContent());
-        info($input->email);
+        
         $validator = Validator::make((array) json_decode($request->getContent()), [  
             'email' => 'required|email', 
             'password' => 'required' 
         ]);
-        //info($validator->errors());
-        if ($validator->fails()) { 
-            return response()->json(['error'=>$validator->errors()], 401);            
-        }
-        //info($validator->errors());
+        
         if ($validator->fails()) { 
             return response()->json(['error'=>$validator->errors()], 401);            
         }
 
+       
         $existeUser = User::where(['email' => $input->email, 'password' => bcrypt($input->password)])->get(); 
-        info($existeUser);
-        if(isset($existeUser->email)){ 
-            info("Achei o usuário");
+       
+        if(isset($existeUser[0]->email)){ 
             $user = Auth::user(); 
             
             $success['token'] =  $user->createToken('MyApp')->accessToken; 
@@ -59,7 +57,6 @@ class UserController extends Controller
      */ 
     public function registerDoctor(Request $request) 
     { 
-        //info((array) json_decode($request->getContent()));
         $validator = Validator::make((array) json_decode($request->getContent()), [ 
             'name' => 'required', 
             'email' => 'required|email', 
@@ -69,8 +66,7 @@ class UserController extends Controller
             'cro' => 'required|min:4|max:10',
             'cro_uf' => 'required', 
         ]);
-        
-        //info($validator->errors());
+
         if ($validator->fails()) { 
             return response()->json(['error'=>$validator->errors()], 401);            
         }
@@ -79,23 +75,22 @@ class UserController extends Controller
         $input = json_decode($request->getContent());
         
         // -- validação de duplicidade
-        $user = User::where('email', $input->email)->get()[0];
-        if(isset($user->id))
+        $user = User::where('email', $input->email)->get();
+        if(isset($user[0]->id))
         {
             return response()->json(['error'=>['email' => ['Este e-mail já está cadastrado em nossa base de dados'] ]], 401);  
         }
-        $user = User::where('cpf', $input->cpf)->get()[0];
-        if(isset($user->id))
+        $user = Doctor::where('cpf', $input->cpf)->get();
+        if(isset($user[0]->id))
         {
             return response()->json(['error'=>['email' => ['Este CPF já está cadastrado em nossa base de dados'] ]], 401);  
         }
-        $user = User::where('cro', $input->cro)->get()[0];
-        if(isset($user->id))
+        $user = Doctor::where('cro', $input->cro)->get();
+        if(isset($user[0]->id))
         {
             return response()->json(['error'=>['email' => ['Este CRO já está cadastrado em nossa base de dados'] ]], 401);  
         }
 
-        //error_log(print_r($input, true), 0);
         $input->password = bcrypt($input->password); 
         $user = User::create([
             "name" => $input->name,
@@ -116,6 +111,17 @@ class UserController extends Controller
         ];
         
         $doctor = Doctor::create($createDoctor);
+
+        // -- relacionamento entre dentistas e especialidades
+        $specialities = $input->specialities;
+
+        foreach($specialities as $specialitie)
+        {
+            DoctorHasSpecialities::create([
+                "doctors_id" => $doctor->id,
+                "specialities_id" => $specialitie
+            ]);
+        }
 
         $doctor->token = $success['token'];
         $doctor->profile_type = $user->profile_type;
