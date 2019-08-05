@@ -118,6 +118,7 @@ export default class CadDentista extends Component {
     }
   
     handleDoctorCreate = () => {
+        
         this.setState({activity: true});
         fetch("http://192.168.0.20:81/api/register_doctor", {
             method: "POST",  
@@ -133,7 +134,8 @@ export default class CadDentista extends Component {
             }),
             headers: {  
               'Accept' : 'application/json',
-              'Content-Type': 'application/json; charset=utf-8' 
+              'Content-Type': 'application/json; charset=utf-8'
+              
             } 
         }).then((response) => response.json())
             .then(async responseJson => {
@@ -145,11 +147,13 @@ export default class CadDentista extends Component {
                 });
             } else {
                 await TokenManager.setToken(responseJson.data.token);
+                await TokenManager.setDoctorId(responseJson.data.id);
                 await TokenManager.setProfile(responseJson.data.profile_type);
                 await TokenManager.setName(responseJson.data.name);
                 console.warn(await TokenManager.getToken()); 
                 console.warn(await TokenManager.getName()); 
-                console.warn(await TokenManager.getProfile());  
+                console.warn(await TokenManager.getProfile());
+                console.warn(await TokenManager.getDoctorId());    
                 this.props.navigation.navigate("Auth");
             }
         })

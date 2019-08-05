@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth; 
+use Illuminate\Support\Facades\DB;
 use Validator;
 use App\User; 
 use App\Doctor; 
@@ -19,6 +20,10 @@ class OfficersController extends Controller
 
     public function registerOfficer(Request $request)
     {
+        $user = Auth::user(); 
+
+        $doctor = Doctor::where("users_id", $user->id)->get()[0];
+
         $input = json_decode($request->getContent());
         
         $validator = Validator::make((array) json_decode($request->getContent()), [  
@@ -37,6 +42,7 @@ class OfficersController extends Controller
         }
 
         $createOfficers = Officer::create([
+            "doctors_id" => $doctor->id,
             "name" => $input->name,
             "email" => $input->email,
             'postal_code' =>  $input->postal_code,
@@ -61,15 +67,14 @@ class OfficersController extends Controller
         return response()->json(['success'=>true, 'message' => "Cadastro efetuado com sucesso!" , 'data' => $createOfficers], $this->successStatus); 
     }
 
-    public function listOfficersForDcotors($doctors_id)
+    public function listOfficersForDoctors()
     {
-       /*  $officers = DB::table()
-                    ->join()
-                    ->join()
-                    ->select()
-                    ->where()
-                    ->get(); */
+        $user = Auth::user(); 
+
+        $doctor = Doctor::where("users_id", $user->id)->get()[0];
                     
-        return response()->json(['success'=>true, 'message' => "Dados resgatados com sucesso!" , 'data' => Officer::all()], $this->successStatus);
+        $officers = Officer::where("doctors_id", $doctor->id)->get(); 
+
+        return response()->json(['success'=>true, 'message' => "Dados resgatados com sucesso!" , 'data' =>  $officers], $this->successStatus);
     }
 }
