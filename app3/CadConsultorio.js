@@ -15,6 +15,8 @@ import DateTimePicker from "react-native-modal-datetime-picker";
 import { ScrollView } from 'react-native-gesture-handler';
 import SectionedMultiSelect from 'react-native-sectioned-multi-select';
 
+const host = "http://192.168.15.98:81/api/";
+
 export default class Consultorio extends Component {
     constructor(props) {
       super(props);
@@ -125,7 +127,7 @@ export default class Consultorio extends Component {
     async componentDidMount(){
       var token = (await TokenManager.getToken());
       this.setState({activity: true});
-      fetch("http://192.168.0.20:81/api/list_officers_for_doctors", {  
+      fetch(host + "list_officers_for_doctors", {  
           method: "GET",  
           headers: {  
             'Accept' : 'application/json',
@@ -148,7 +150,7 @@ export default class Consultorio extends Component {
             });
           }
   
-          fetch("http://192.168.0.20:81/api/list_plans", { 
+          fetch(host + "list_plans", { 
             method: "GET",  
             headers: {  
               'Accept' : 'application/json',
@@ -203,7 +205,7 @@ export default class Consultorio extends Component {
     async handleOfficersCreate(){
       var token = (await TokenManager.getToken());
       this.setState({activity: true});
-      fetch("http://192.168.0.20:81/api/register_officer", {
+      fetch(host + "register_officer", {
           method: "POST",  
             body: JSON.stringify({
               name: this.state.name,

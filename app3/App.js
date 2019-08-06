@@ -19,6 +19,7 @@ import DateTimePicker from "react-native-modal-datetime-picker";
 import { ScrollView } from 'react-native-gesture-handler';
 import SectionedMultiSelect from 'react-native-sectioned-multi-select';
 
+const host = "http://192.168.15.98:81/api/";
 
 class Auxiliar extends Component {
   static navigationOptions = {
@@ -181,7 +182,7 @@ class Perfil extends Component {
                   onPress={() => this.props.navigation.navigate("CadAuxiliarStack")}
                   style={styles.btnPerfil}><Text style={styles.textColor}>Auxiliar</Text></TouchableOpacity>
         <TouchableOpacity
-                  onPress={() => this.props.navigation.navigate("CadPacienteStack", componentDidMount())}
+                  onPress={() => this.props.navigation.navigate("CadPacienteStack")}
                   style={styles.btnPerfil}><Text style={styles.textColor}>Paciente</Text></TouchableOpacity>
       </KeyboardAvoidingView>
     ); 
@@ -218,7 +219,7 @@ class LoginScreen extends Component {
 
   handleUserLogin = () => {
     this.setState({activity: true});
-    fetch("http://192.168.0.20:81/api/login", {
+    fetch(host + "login", {
         method: "POST",  
         body: JSON.stringify({
           email: this.state.email,

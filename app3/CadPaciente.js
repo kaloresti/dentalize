@@ -18,6 +18,8 @@ import DateTimePicker from "react-native-modal-datetime-picker";
 import { ScrollView } from 'react-native-gesture-handler';
 import SectionedMultiSelect from 'react-native-sectioned-multi-select';
 
+const host = "http://192.168.15.98:81/api/";
+
 export default class Paciente extends Component {
     
     constructor(props) {
@@ -78,7 +80,7 @@ export default class Paciente extends Component {
     };
 
     handleDatePicked = (date) => {
-        console.log(date);
+        //console.log(date);
         this.setState({  
             [date.field]: date.date.toString()
         }); 
@@ -102,7 +104,7 @@ export default class Paciente extends Component {
     
     async handlePlans()
     {
-        fetch("http://192.168.0.20:81/api/list_plans", { 
+        fetch(host + "list_plans", { 
             method: "GET",  
             headers: {  
                 'Accept' : 'application/json',
@@ -134,7 +136,7 @@ export default class Paciente extends Component {
     async handleOfficers()
     {
         var token = (await TokenManager.getToken());
-        fetch("http://192.168.0.20:81/api/list_officers_for_doctors", { 
+        fetch(host + "list_officers_for_doctors", { 
             method: "GET",  
             headers: {  
                 'Accept' : 'application/json',
@@ -167,7 +169,7 @@ export default class Paciente extends Component {
     async handlePatients() 
     {
         var token = (await TokenManager.getToken());
-        fetch("http://192.168.0.20:81/api/list_patients_for_doctors", {  
+        fetch(host+"list_patients_for_doctors", {  
           method: "POST",
           body: JSON.stringify({
               officers_id: this.state.search_officers_id,
@@ -200,28 +202,33 @@ export default class Paciente extends Component {
         }); // fim do fetch
     }
 
+/*     async componentDidMount()
+    {
+        this.setState({activity: true});
+
+        await this.handleOfficers();
+        await this.handlePlans();
+        await this.handlePatients();
+
+        this.setState({activity: false});
+    } */
+
     async componentDidMount()
     {
         this.setState({activity: true});
-        
+
         await this.handleOfficers();
         await this.handlePlans();
         await this.handlePatients();
 
         this.setState({activity: false});
     }
-
-    async componentBeforeUpdate()
-    {
-        await this.handleOfficers();
-        await this.handlePlans();
-    }
     
     async handlePacientCreate(){
         this.setState({activity: true});
         var token = (await TokenManager.getToken());
         //this.setState({activity: false});
-        fetch("http://192.168.0.20:81/api/register_patient", {
+        fetch(host+"register_patient", {
             method: "POST",  
               body: JSON.stringify({
                 name: this.state.name,

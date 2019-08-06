@@ -10,6 +10,8 @@ import {CirclesLoader, PulseLoader, TextLoader, DotsLoader} from 'react-native-i
 import SectionedMultiSelect from 'react-native-sectioned-multi-select';
 import { ScrollView } from 'react-native-gesture-handler';
 
+const host = "http://192.168.15.98:81/api/";
+
 const items = [
   // this is the parent or 'item'
   {
@@ -120,7 +122,7 @@ export default class CadDentista extends Component {
     handleDoctorCreate = () => {
         
         this.setState({activity: true});
-        fetch("http://192.168.0.20:81/api/register_doctor", {
+        fetch(host + "register_doctor", {
             method: "POST",  
               body: JSON.stringify({
               name: this.state.name,
