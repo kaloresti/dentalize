@@ -10,7 +10,7 @@ import {CirclesLoader, PulseLoader, TextLoader, DotsLoader} from 'react-native-i
 import SectionedMultiSelect from 'react-native-sectioned-multi-select';
 import { ScrollView } from 'react-native-gesture-handler';
 
-const host = "http://192.168.15.98:81/api/";
+const host = "http://192.168.0.20:81/api/";
 
 const items = [
   // this is the parent or 'item'
@@ -149,13 +149,13 @@ export default class CadDentista extends Component {
                 });
             } else {
                 await TokenManager.setToken(responseJson.data.token);
-                await TokenManager.setDoctorId(responseJson.data.id);
+                //await TokenManager.setDoctorId(responseJson.data.id);
                 await TokenManager.setProfile(responseJson.data.profile_type);
                 await TokenManager.setName(responseJson.data.name);
                 console.warn(await TokenManager.getToken()); 
                 console.warn(await TokenManager.getName()); 
                 console.warn(await TokenManager.getProfile());
-                console.warn(await TokenManager.getDoctorId());    
+                //console.warn(await TokenManager.getDoctorId());    
                 this.props.navigation.navigate("Auth");
             }
         })
@@ -318,8 +318,8 @@ export default class CadDentista extends Component {
       backgroundColor: '#5199FF',
       alignItems: 'center',
       justifyContent: 'center',
-      paddingLeft: 50,
-      paddingRight: 50
+      paddingLeft: 20,
+      paddingRight: 20
     },
     containerLoading: {
         flex: 1,

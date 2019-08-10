@@ -26,8 +26,7 @@ class PatientController extends Controller
         $doctor = Doctor::where("users_id", $user->id)->get()[0];
 
         $input = json_decode($request->getContent());
-        info($request->getContent());
-        info(date('Y-m-d', strtotime($input->burned_at)));
+
         $validator = Validator::make((array) json_decode($request->getContent()), [  
             'name' => 'required', 
             'postal_code' => 'required',
@@ -48,28 +47,46 @@ class PatientController extends Controller
             return response()->json(['error'=>$validator->errors()], 401);            
         }
 
-        $createPatient = Patient::create([
-            'name' => $input->name, 
-            'postal_code' => $input->postal_code, 
-            'uf' => $input->uf, 
-            'city' => $input->city, 
-            'district' => $input->district, 
-            'address' => $input->address,
-            'number' => $input->number, 
-            'celphone' => $input->celphone, 
-            'phone' => $input->phone,
-            'email' => $input->email, 
-            'rg' => $input->rg, 
-            'cpf' => $input->cpf, 
-            'burned_at' => date('Y-m-d', strtotime($input->burned_at)) ,
-            'plans_id' => $input->plans_id,
-            //'officers_id' => $input->officers_id,
-        ]);
+        $existeCpf = Pacient::where("cpf", $input->cpf)->get();
 
+        if(isset($existeCpf[0]->id))
+        {
+            $eMeuPaciente = OfficersHasPacients::where(["pacients_id" => $existeCpf[0]->id, "doctors_id" => $doctor->id])->get();
+
+            if(isset($eMeuPaciente[0]->doctors_id))
+            {
+                return response()->json(['error'=> ["Este paciente já está vinculado a você."]], 401); 
+            }
+        }
+
+        if(!isset($existeCpf[0])) {
+            $createPatient = Patient::create([
+                'name' => $input->name, 
+                'postal_code' => $input->postal_code, 
+                'uf' => $input->uf, 
+                'city' => $input->city, 
+                'district' => $input->district, 
+                'address' => $input->address,
+                'number' => $input->number, 
+                'celphone' => $input->celphone, 
+                'phone' => $input->phone,
+                'email' => $input->email, 
+                'rg' => $input->rg, 
+                'cpf' => $input->cpf, 
+                'burned_at' => date('Y-m-d', strtotime($input->burned_at)) ,
+                'plans_id' => $input->plans_id,
+            ]);
+
+            $idPatients = $createPatient->id;
+
+        } else {
+            $idPatients = $existeCpf[0]->id;
+        }
+        
         $createOfficersHasPatient = OfficersHasPatients::create([
             "officers_id" => $input->officers_id,
             "doctors_id" => $doctor->id,
-            "patients_id" => $createPatient->id
+            "patients_id" => $idPatients
         ]);
 
         return response()->json(['success'=>true, 'message' => "Cadastro efetuado com sucesso!" , 'data' => $createPatient], $this->successStatus); 

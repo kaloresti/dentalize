@@ -10,6 +10,7 @@ import { TextInputMask } from 'react-native-masked-text';
 import CadDentista from './CadDentista';
 import CadConsultorio from './CadConsultorio';
 import CadPaciente from './CadPaciente';
+import CadAuxiliar from './CadAuxiliar';
 
 import { Ionicons } from '@expo/vector-icons';
 //import {Calendar, CalendarList} from 'react-native-calendars';
@@ -19,7 +20,7 @@ import DateTimePicker from "react-native-modal-datetime-picker";
 import { ScrollView } from 'react-native-gesture-handler';
 import SectionedMultiSelect from 'react-native-sectioned-multi-select';
 
-const host = "http://192.168.15.98:81/api/";
+const host = "http://192.168.0.20:81/api/";
 
 class Auxiliar extends Component {
   static navigationOptions = {
@@ -40,10 +41,18 @@ class AgendaAuxiliar extends Component {
     title: "Agenda Auxiliar", 
     header: null
   };
+  async logOff(){
+    await TokenManager.setToken('');
+    this.props.navigation.navigate("Auth");
+  }
   render(){
     return (
       <View style={styles.container}>
         <Text>AGENDA AUXILIAR</Text> 
+        <TouchableOpacity
+                  onPress={()=> this.logOff()}
+                  style={styles.btnCancel}><Text style={styles.textColor}>Sair</Text></TouchableOpacity>
+
       </View>
     );
   }
@@ -90,7 +99,10 @@ class Agenda extends Component {
       });
     }
   }
-
+  async logOff(){
+    await TokenManager.setToken('');
+    this.props.navigation.navigate("Auth");
+  }
   render(){
     const { selectedStartDate, selectedEndDate } = this.state;
     const minDate = new Date(2017, 12, 30); // Today
@@ -123,6 +135,9 @@ class Agenda extends Component {
           <Text>SELECTED START DATE:{ startDate }</Text>
           <Text>SELECTED END DATE:{ endDate }</Text>
         </View>
+        <TouchableOpacity
+                  onPress={()=> this.logOff()}
+                  style={styles.btnCancel}><Text style={styles.textColor}>Sair</Text></TouchableOpacity>
       </View>
     );
   }
@@ -181,9 +196,9 @@ class Perfil extends Component {
         <TouchableOpacity
                   onPress={() => this.props.navigation.navigate("CadAuxiliarStack")}
                   style={styles.btnPerfil}><Text style={styles.textColor}>Auxiliar</Text></TouchableOpacity>
-        <TouchableOpacity
+       {/*  <TouchableOpacity
                   onPress={() => this.props.navigation.navigate("CadPacienteStack")}
-                  style={styles.btnPerfil}><Text style={styles.textColor}>Paciente</Text></TouchableOpacity>
+                  style={styles.btnPerfil}><Text style={styles.textColor}>Paciente</Text></TouchableOpacity> */}
       </KeyboardAvoidingView>
     ); 
   }
@@ -593,6 +608,9 @@ const AreaDeslogado = createStackNavigator({
   },
   CadDentistaStack: {
     screen: CadDentista
+  },
+  CadAuxiliarStack: {
+    screen: CadAuxiliar
   },
   LoginScreen:
   {

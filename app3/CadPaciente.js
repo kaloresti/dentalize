@@ -18,7 +18,7 @@ import DateTimePicker from "react-native-modal-datetime-picker";
 import { ScrollView } from 'react-native-gesture-handler';
 import SectionedMultiSelect from 'react-native-sectioned-multi-select';
 
-const host = "http://192.168.15.98:81/api/";
+const host = "http://192.168.0.20:81/api/";
 
 export default class Paciente extends Component {
     

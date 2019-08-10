@@ -17,12 +17,14 @@ export class AuthScreen extends React.Component {
 
         const hasUserToken = await TokenManager.hasToken();
         const profile = await TokenManager.getProfile();
+        console.log(profile);
+        console.log(hasUserToken);
         this.setState({ready:true}, () => {
           if(hasUserToken) {
             if(profile == 'odontologo'){
               this.props.navigation.navigate("Logado");
-            }else {
-              this.props.navigation.navigate("LogadoAuxiliar");
+            }else if(profile == 'auxiliar'){
+              this.props.navigation.navigate("LogadoAuxiliar"); 
             }
             
           }else {

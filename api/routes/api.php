@@ -19,6 +19,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 Route::post('login', 'API\UserController@login');
 Route::post('register_doctor', 'API\UserController@registerDoctor');
+Route::post('register_helper', 'API\UserController@registerHelper');
 
 Route::get('list_plans', 'API\PlansController@listAll');
 Route::get('list_specialities', 'API\SpecialitiesController@listAll');

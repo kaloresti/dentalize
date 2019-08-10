@@ -26,19 +26,16 @@ class OfficersController extends Controller
 
         $input = json_decode($request->getContent());
         
-        $validator = Validator::make((array) json_decode($request->getContent()), [  
-            'name' => 'required', 
-            'postal_code' => 'required',
-            'uf' => 'required',
-            'city' => 'required',
-            'district' => 'required',
-            'number' => 'required',
-            'celphone' => 'required',
-            'email' => 'required|email'
-        ]);
+        $validator = Validator::make((array) json_decode($request->getContent()), Officer::rules());
         
         if ($validator->fails()) { 
             return response()->json(['error'=>$validator->errors()], 401);            
+        }
+
+        $existeOfficer = Officer::where("unique_code_cfo", $input->unique_code_cfo)->get();
+        if(isset($existeOfficer[0]->id))
+        {
+            return response()->json(['error'=> ["Este consultório já está cadastrado, contate o responsável para obter mais informações."]], 401);
         }
 
         $createOfficers = Officer::create([
@@ -53,6 +50,7 @@ class OfficersController extends Controller
             'number' =>  $input->number,
             'celphone' =>  $input->celphone,
             'email' =>  $input->email,
+            'unique_code_cfo' => $input->unique_code_cfo,
             "hours_open_id" => 1
         ]);
 

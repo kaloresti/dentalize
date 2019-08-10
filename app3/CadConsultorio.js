@@ -15,7 +15,7 @@ import DateTimePicker from "react-native-modal-datetime-picker";
 import { ScrollView } from 'react-native-gesture-handler';
 import SectionedMultiSelect from 'react-native-sectioned-multi-select';
 
-const host = "http://192.168.15.98:81/api/";
+const host = "http://192.168.0.20:81/api/";
 
 export default class Consultorio extends Component {
     constructor(props) {
@@ -52,6 +52,7 @@ export default class Consultorio extends Component {
       celphone: '',
       phone: '',
       email: '',
+      unique_code_cfo : '',
       numberVisivle: false,
       complementationVisible: false,
   
@@ -219,7 +220,8 @@ export default class Consultorio extends Component {
               phone:this.state.phone,
               celphone:this.state.celphone,
               email: this.state.email,
-              plans: this.state.selectedPlanos
+              plans: this.state.selectedPlanos,
+              unique_code_cfo: this.state.unique_code_cfo
           }),
           headers: {  
             'Accept' : 'application/json',
@@ -310,6 +312,11 @@ export default class Consultorio extends Component {
                       }}>
                         {/* <Image style={styles.appImageMd} source={{ uri: 'http://odontologiadrkikuchi.com.br/wp-content/uploads/2017/03/cropped-tooth-icon.png' }} /> */}
                         <Text style={[styles.textDivisor, {color: 'yellow'}]}>Dados Gerais</Text>
+                        <TextInput 
+                          onChangeText={this.handleChange('unique_code_cfo')}
+                          value={this.state.unique_code_cfo}
+                          style={styles.formTextField} placeholder="Código único"  maxLength = {150}></TextInput>
+
                         <TextInput 
                           onChangeText={this.handleChange('name')}
                           value={this.state.name}
