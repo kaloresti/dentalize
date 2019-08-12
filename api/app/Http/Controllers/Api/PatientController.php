@@ -47,7 +47,7 @@ class PatientController extends Controller
             return response()->json(['error'=>$validator->errors()], 401);            
         }
 
-        $existeCpf = Pacient::where("cpf", $input->cpf)->get();
+        $existeCpf = Patient::where("cpf", $input->cpf)->get();
 
         if(isset($existeCpf[0]->id))
         {

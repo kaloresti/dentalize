@@ -11,6 +11,7 @@ import CadDentista from './CadDentista';
 import CadConsultorio from './CadConsultorio';
 import CadPaciente from './CadPaciente';
 import CadAuxiliar from './CadAuxiliar';
+import CadConvite from './CadConvite';
 
 import { Ionicons } from '@expo/vector-icons';
 //import {Calendar, CalendarList} from 'react-native-calendars';
@@ -22,19 +23,25 @@ import SectionedMultiSelect from 'react-native-sectioned-multi-select';
 
 const host = "http://192.168.0.20:81/api/";
 
-class Auxiliar extends Component {
+
+class CadInvitesAuxiliar extends Component {
   static navigationOptions = {
-    title: "Auxiliares", 
+    title: "Invites", 
     header: null
   };
+  async logOff(){
+    await TokenManager.setToken('');
+    this.props.navigation.navigate("Auth");
+  }
   render(){
     return (
       <View style={styles.container}>
-        <Text>AUXILIARES</Text> 
+        <Text>Invites Auxiliar</Text> 
       </View>
     );
   }
 }
+
 
 class AgendaAuxiliar extends Component {
   static navigationOptions = {
@@ -50,9 +57,8 @@ class AgendaAuxiliar extends Component {
       <View style={styles.container}>
         <Text>AGENDA AUXILIAR</Text> 
         <TouchableOpacity
-                  onPress={()=> this.logOff()}
-                  style={styles.btnCancel}><Text style={styles.textColor}>Sair</Text></TouchableOpacity>
-
+            onPress={()=> this.logOff()}
+            style={styles.btnCancel}><Text style={styles.textColor}>Sair</Text></TouchableOpacity>
       </View>
     );
   }
@@ -256,9 +262,9 @@ class LoginScreen extends Component {
             await TokenManager.setToken(responseJson.data.token);
             await TokenManager.setProfile(responseJson.data.profile_type);
             await TokenManager.setName(responseJson.data.name);
-            console.warn(await TokenManager.getToken()); 
+           /*  console.warn(await TokenManager.getToken()); 
             console.warn(await TokenManager.getName()); 
-            console.warn(await TokenManager.getProfile());  
+            console.warn(await TokenManager.getProfile());  */ 
             this.props.navigation.navigate("Auth");
         }
     })
@@ -533,7 +539,7 @@ const ConsultorioStack = createStackNavigator({
 
 const AuxiliarStack = createStackNavigator({
   AuxiliarStackHome: {
-    screen: Auxiliar
+    screen: CadConvite
   }
 });
 
@@ -596,9 +602,19 @@ const AgendaAuxiliarStack = createStackNavigator({
     screen: AgendaAuxiliar
   }
 });
+
+const InvitesAuxiliarStack = createStackNavigator({
+  InvitesAuxiliarStackHome: {
+    screen: CadInvitesAuxiliar
+  } 
+});
+
 const AreaLogadoAuxiliar = createBottomTabNavigator({
   AgendaAuxiliar: {
     screen: AgendaAuxiliarStack
+  },
+  InvitesAuxiliar: {
+    screen: InvitesAuxiliarStack
   }
 }); 
 

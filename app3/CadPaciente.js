@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import { StyleSheet, Alert, Text, Picker , Modal, View, Image, Button,TouchableNativeFeedback, TouchableHighlight, TouchableOpacity, TouchableWithoutFeedback, KeyboardAvoidingView, TextInput, ActivityIndicator } from 'react-native';
+import { StyleSheet, Alert, Dimensions, Text, Picker , Modal, View, Image, Button,TouchableNativeFeedback, TouchableHighlight, TouchableOpacity, TouchableWithoutFeedback, KeyboardAvoidingView, TextInput, ActivityIndicator } from 'react-native';
 import {creatStackNavigator, createSwitchNavigator, createAppContainer, createStackNavigator, createBottomTabNavigator, withOrientation} from 'react-navigation';
 import { AuthScreen } from './src/modules/Auth';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -24,10 +24,17 @@ export default class Paciente extends Component {
     
     constructor(props) {
         super(props);
-        //this.handleOfficers();
-        //this.handlePlans(); 
+        
+
+       /*  this.handleOfficers();
+        this.handlePlans(); */
+        
     }
     
+    /* async componentWillMount(){
+        await  this.handleOfficers();
+    } */
+
     static navigationOptions = { 
         title: "Pacientes", 
         header: null
@@ -197,7 +204,7 @@ export default class Paciente extends Component {
             }
         })
         .catch((error) => {
-            this.setState({activity: false});
+          
             console.error(error);
         }); // fim do fetch
     }
@@ -284,7 +291,9 @@ export default class Paciente extends Component {
           ); 
         } else {
           return (
+              
                 <KeyboardAvoidingView behavior="padding" enabled style={styles.containerForm} key={this.state.uniqueValue}>
+                    <ScrollView>
                     <Modal
                         animationType="slide"
                         transparent={false}
@@ -295,8 +304,8 @@ export default class Paciente extends Component {
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 paddingTop:50,
-                                paddingLeft: 50,
-                                paddingRight: 50
+                                paddingLeft: 20,
+                                paddingRight: 20
                             }}>
                                 <Image style={styles.appImageMd} source={{ uri: 'http://odontologiadrkikuchi.com.br/wp-content/uploads/2017/03/cropped-tooth-icon.png' }} />
                                 <Text style={{
@@ -333,8 +342,8 @@ export default class Paciente extends Component {
                                         //alignItems: 'center',
                                         justifyContent: 'center', 
                                         paddingTop:20,
-                                        paddingLeft: 50,
-                                        paddingRight: 50
+                                        paddingLeft: 20,
+                                        paddingRight: 20
                                     }}>
                                     {/* <Image style={styles.appImageMd} source={{ uri: 'http://odontologiadrkikuchi.com.br/wp-content/uploads/2017/03/cropped-tooth-icon.png' }} /> */}
                                             <Text style={[styles.textDivisor, {color: 'yellow'}]}>Consultório</Text>
@@ -563,9 +572,9 @@ export default class Paciente extends Component {
                                 </View>
                         </TouchableHighlight>
   
-                        <Text style={[styles.textDivisor, {color: 'yellow'}]}>clique para cadastrar um paciente</Text>
-                        <ScrollView>
-                            <Text style={[styles.textDivisor, {color: 'yellow'}]}>filtrar por consultório</Text>
+                        
+                        
+                            
                             <View style={{flex:.5, alignSelf: "stretch", justifyContent:'center', height: 40,
                                 borderBottomWidth: 2, 
                                 borderBottomColor: "#fff",
@@ -578,13 +587,13 @@ export default class Paciente extends Component {
                                         //this.handlePatients(itemValue, itemIndex);
                                     }
                                     >
-                                    <Picker.Item key={0} value={0} label={'Selecione'} />
+                                    <Picker.Item key={0} value={0} label={'Filtrar por consultório'} />
                                 {this.state.searchOfficers.map((office, i) => { 
                                     return <Picker.Item key={i} value={office.id} label={office.name } />
                                 })}
                             </Picker>
                             </View>
-                            <Text style={[styles.textDivisor, {color: 'yellow'}]}>filtrar por plano</Text>
+                           
                             <View style={{flex:.5, alignSelf: "stretch", justifyContent:'center', height: 40,
                                 borderBottomWidth: 2, 
                                 borderBottomColor: "#fff",
@@ -596,7 +605,7 @@ export default class Paciente extends Component {
                                         this.setState({search_plans_id: itemValue})
                                     }
                                     >
-                                        <Picker.Item key={0} value={0} label={'Selecione'} />
+                                        <Picker.Item key={0} value={0} label={'Filtrar por plano'} />
                                 {this.state.searchPlans.map((plan, i) => { 
                                     return <Picker.Item key={i} value={plan.id} label={plan.name } />
                                 })}
@@ -615,6 +624,7 @@ export default class Paciente extends Component {
                                             flex: 1,
                                             flexDirection: 'column',
                                             justifyContent: 'center',
+                                            width:Dimensions.get('window').width - 50,
                                         }}> 
                                         {/* <View style={{backgroundColor: 'powderblue',  alignItems: "stretch",}}> */}
                                             <Text style={{alignSelf:"center"}}>
@@ -677,8 +687,9 @@ export default class Paciente extends Component {
                                         {/*  </View> */}
                                         </View>
                             })}
-                            </ScrollView>
+                      </ScrollView>     
                 </KeyboardAvoidingView>
+                
           );
         }
     }

@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import { StyleSheet, Alert, Text, Picker , Modal, View, Image, Button,TouchableNativeFeedback, TouchableHighlight, TouchableOpacity, TouchableWithoutFeedback, KeyboardAvoidingView, TextInput, ActivityIndicator } from 'react-native';
+import { StyleSheet, Alert, Text, Dimensions, Picker , Modal, View, Image, Button,TouchableNativeFeedback, TouchableHighlight, TouchableOpacity, TouchableWithoutFeedback, KeyboardAvoidingView, TextInput, ActivityIndicator } from 'react-native';
 import {creatStackNavigator, createSwitchNavigator, createAppContainer, createStackNavigator, createBottomTabNavigator, withOrientation} from 'react-navigation';
 import { AuthScreen } from './src/modules/Auth';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -259,7 +259,9 @@ export default class Consultorio extends Component {
         ); 
       } else {
         return (
+         
             <KeyboardAvoidingView behavior="padding" enabled style={styles.containerForm} key={this.state.uniqueValue}>
+               <ScrollView>
                 <Modal
                   animationType="slide"
                   transparent={false}
@@ -270,8 +272,8 @@ export default class Consultorio extends Component {
                         alignItems: 'center',
                         justifyContent: 'center',
                         paddingTop:50,
-                        paddingLeft: 50,
-                        paddingRight: 50
+                        paddingLeft: 10,
+                        paddingRight: 10
                       }}>
                         <Image style={styles.appImageMd} source={{ uri: 'http://odontologiadrkikuchi.com.br/wp-content/uploads/2017/03/cropped-tooth-icon.png' }} />
                         <Text style={{
@@ -307,8 +309,8 @@ export default class Consultorio extends Component {
                         //alignItems: 'center',
                         justifyContent: 'center', 
                         paddingTop:20,
-                        paddingLeft: 50,
-                        paddingRight: 50
+                        paddingLeft: 20,
+                        paddingRight: 20
                       }}>
                         {/* <Image style={styles.appImageMd} source={{ uri: 'http://odontologiadrkikuchi.com.br/wp-content/uploads/2017/03/cropped-tooth-icon.png' }} /> */}
                         <Text style={[styles.textDivisor, {color: 'yellow'}]}>Dados Gerais</Text>
@@ -632,21 +634,22 @@ export default class Consultorio extends Component {
                     </View>
                 </TouchableHighlight>
   
-                <Text style={[styles.textDivisor, {color: 'yellow'}]}>clique para cadastrar um consultório</Text>
-                <ScrollView>
+                
+                
                   {this.state.consultorios.map((consultorio, i) => { 
                       return <View 
                               key={consultorio.id}
                               style={{
                                 backgroundColor: "#052555",
                                 borderRadius: 10,
-                                padding:15,
+                                padding:5,
                                 marginTop:10,
                                 alignSelf: "center",
                                 alignItems: "stretch",
                                 flex: 1,
-                                flexDirection: 'column',
+                                //flexDirection: 'column',
                                 justifyContent: 'center',
+                                width:Dimensions.get('window').width - 50,
                               }}> 
                               {/* <View style={{backgroundColor: 'powderblue',  alignItems: "stretch",}}> */}
                                 <Text style={{alignSelf:"center"}}>
@@ -669,7 +672,7 @@ export default class Consultorio extends Component {
                                     style={{
                                       backgroundColor: "#052555",
                                       borderRadius: 10,
-                                      padding:15,
+                                      padding:5,
                                       marginTop:10,
                                       alignSelf: "center",
                                       alignItems: "center",
@@ -709,8 +712,9 @@ export default class Consultorio extends Component {
                                {/*  </View> */}
                               </View>
                   })}
-                </ScrollView>
+                </ScrollView> 
             </KeyboardAvoidingView>
+            
             
         );
       }
@@ -740,8 +744,8 @@ export default class Consultorio extends Component {
       backgroundColor: '#5199FF',
       alignItems: 'center',
       //justifyContent: 'center',
-      paddingLeft: 20,
-      paddingRight: 20,
+      paddingLeft: 5,
+      paddingRight: 5,
       paddingTop: 50
     },
     containerLoading: {
@@ -779,7 +783,7 @@ export default class Consultorio extends Component {
       borderRadius: 40,
       width:50,
       padding: 10,
-      //alignSelf: "stretch",
+      alignSelf: "flex-end",
       justifyContent: "center",
       alignItems: "center"
     },
@@ -788,7 +792,7 @@ export default class Consultorio extends Component {
       borderRadius: 40,
       padding: 10,
       width:50,
-      //alignSelf: "stretch",
+      alignSelf: "flex-end",
       justifyContent: "center",
       alignItems: "center"
     },
@@ -797,7 +801,7 @@ export default class Consultorio extends Component {
       borderRadius: 40,
       padding: 10,
       width:50,
-      //alignSelf: "stretch",
+      alignSelf: "flex-end",
       justifyContent: "center",
       alignItems: "center"
     },

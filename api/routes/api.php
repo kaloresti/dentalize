@@ -34,4 +34,11 @@ Route::group(['middleware' => 'auth:api'], function(){
 
     Route::post('list_patients_for_doctors', 'API\PatientController@listPatientsForDoctors');
     Route::post('register_patient', 'API\PatientController@registerPatient');
+
+    Route::post('list_invites_for_me', 'API\InvitersController@listIvitesForMe');
+    Route::post('list_invites_by_me', 'API\InvitersController@listInvitesByMe');
+    Route::post('create_invite', 'API\InvitersController@createInvite');
+    Route::post('cancel_invite' , 'API\InvitersController@cancelInvite');
+    Route::post('reject_invite' , 'API\InvitersController@rejectInvite');
+    Route::post('resend_invite' , 'API\InvitersController@resendInvite');
 });

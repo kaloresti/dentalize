@@ -117,9 +117,9 @@ export default class CadAuxiliar extends Component {
                 //await TokenManager.setDoctorId(responseJson.data.id);
                 await TokenManager.setProfile(responseJson.data.profile_type);
                 await TokenManager.setName(responseJson.data.name);
-                console.warn(await TokenManager.getToken()); 
+                /* console.warn(await TokenManager.getToken()); 
                 console.warn(await TokenManager.getName()); 
-                console.warn(await TokenManager.getProfile());
+                console.warn(await TokenManager.getProfile()); */
                 //console.warn(await TokenManager.getDoctorId());    
                 this.props.navigation.navigate("Auth");
             }

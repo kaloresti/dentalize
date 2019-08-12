@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import { StyleSheet,  Platform, Alert, Text, Picker , Modal, View, Image, Button,TouchableNativeFeedback, TouchableHighlight, TouchableOpacity, TouchableWithoutFeedback, KeyboardAvoidingView, TextInput, ActivityIndicator } from 'react-native';
+import { StyleSheet, Dimensions,  Platform, Alert, Text, Picker , Modal, View, Image, Button,TouchableNativeFeedback, TouchableHighlight, TouchableOpacity, TouchableWithoutFeedback, KeyboardAvoidingView, TextInput, ActivityIndicator } from 'react-native';
 import {creatStackNavigator, createSwitchNavigator, createAppContainer, createStackNavigator, createBottomTabNavigator, withOrientation} from 'react-navigation';
 import { AuthScreen } from './src/modules/Auth';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -152,9 +152,9 @@ export default class CadDentista extends Component {
                 //await TokenManager.setDoctorId(responseJson.data.id);
                 await TokenManager.setProfile(responseJson.data.profile_type);
                 await TokenManager.setName(responseJson.data.name);
-                console.warn(await TokenManager.getToken()); 
+                /* console.warn(await TokenManager.getToken()); 
                 console.warn(await TokenManager.getName()); 
-                console.warn(await TokenManager.getProfile());
+                console.warn(await TokenManager.getProfile()); */
                 //console.warn(await TokenManager.getDoctorId());    
                 this.props.navigation.navigate("Auth");
             }
@@ -192,8 +192,8 @@ export default class CadDentista extends Component {
                           alignItems: 'center',
                           justifyContent: 'center',
                           paddingTop:50,
-                          paddingLeft: 50,
-                          paddingRight: 50
+                          paddingLeft: 20,
+                          paddingRight: 20
                         }}>
                           <Image style={styles.appImageMd} source={{ uri: 'http://odontologiadrkikuchi.com.br/wp-content/uploads/2017/03/cropped-tooth-icon.png' }} />
                           <Text style={{
