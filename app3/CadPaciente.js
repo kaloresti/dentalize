@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import { StyleSheet, Alert, Dimensions, Text, Picker , Modal, View, Image, Button,TouchableNativeFeedback, TouchableHighlight, TouchableOpacity, TouchableWithoutFeedback, KeyboardAvoidingView, TextInput, ActivityIndicator } from 'react-native';
+import { StyleSheet,RefreshControl, Alert, Dimensions, Text, Picker , Modal, View, Image, Button,TouchableNativeFeedback, TouchableHighlight, TouchableOpacity, TouchableWithoutFeedback, KeyboardAvoidingView, TextInput, ActivityIndicator } from 'react-native';
 import {creatStackNavigator, createSwitchNavigator, createAppContainer, createStackNavigator, createBottomTabNavigator, withOrientation} from 'react-navigation';
 import { AuthScreen } from './src/modules/Auth';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -70,6 +70,8 @@ export default class Paciente extends Component {
         celphone: '',
         phone: '',
         email: '',
+
+        refreshing: false,
     }
 
     onSelectedPlanosChange = (selectedPlanos) => {
@@ -280,6 +282,14 @@ export default class Paciente extends Component {
             console.error(error);
         });
       };
+      _onRefresh = () => {
+        this.setState({refreshing: true});
+        this.handleOfficers();
+        this.setState({refreshing: false});
+        /* fetchData().then(() => {
+          this.setState({refreshing: false});
+        }); */
+      }
     render(){
         if(this.state.activity === true)
         {
@@ -293,7 +303,13 @@ export default class Paciente extends Component {
           return (
               
                 <KeyboardAvoidingView behavior="padding" enabled style={styles.containerForm} key={this.state.uniqueValue}>
-                    <ScrollView>
+                    <ScrollView
+                    refreshControl={
+                        <RefreshControl
+                          refreshing={this.state.refreshing}
+                          onRefresh={this._onRefresh}
+                        />
+                      }>
                     <Modal
                         animationType="slide"
                         transparent={false}

@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import { StyleSheet, Alert, Text, Dimensions, Picker , Modal, View, Image, Button,TouchableNativeFeedback, TouchableHighlight, TouchableOpacity, TouchableWithoutFeedback, KeyboardAvoidingView, TextInput, ActivityIndicator } from 'react-native';
+import { StyleSheet, RefreshControl, Alert, Text, Dimensions, Picker , Modal, View, Image, Button,TouchableNativeFeedback, TouchableHighlight, TouchableOpacity, TouchableWithoutFeedback, KeyboardAvoidingView, TextInput, ActivityIndicator } from 'react-native';
 import {creatStackNavigator, createSwitchNavigator, createAppContainer, createStackNavigator, createBottomTabNavigator, withOrientation} from 'react-navigation';
 import { AuthScreen } from './src/modules/Auth';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -87,7 +87,9 @@ export default class Consultorio extends Component {
       domingoDataFinalVisible:  false ,
   
       selectedPlanos: [],
-  
+      invitesDoctors: [],
+ 
+      refreshing: false,
   
     }
     
@@ -125,9 +127,115 @@ export default class Consultorio extends Component {
       this.setState({modalNewVisible: visible});
     }
   
+    async cancelarInvite(idInvite, type)
+    {
+        //console.log("Status: "+idStatus);
+        var token = (await TokenManager.getToken());
+        this.setState({activity: true});
+        fetch(host + "cancel_invite", {
+            method: "POST",  
+            body: JSON.stringify({
+                idInvite: idInvite,
+                typeHelper: type
+            }),
+            headers: {  
+                'Accept' : 'application/json',
+                'Content-Type': 'application/json; charset=utf-8' ,
+                'Authorization': 'Bearer '+token, 
+            } 
+        }).then((response) => response.json())
+            .then(async responseJson => {
+                this.setState({activity: false});
+            if(responseJson.error){
+                this.setState({
+                    modalVisible: true,
+                    errors: responseJson.error
+                });
+            } else {
+                
+                this.props.navigation.navigate("Consultorios", this.componentDidMount());
+            }
+        })
+        .catch((error) => {
+            this.setState({activity: false});
+            console.error(error);
+        });
+    }
+
+    async acceptInvite(idInvite, type)
+    {
+        //console.log("Status: "+idStatus);
+        var token = (await TokenManager.getToken());
+        this.setState({activity: true});
+        fetch(host + "accept_doctors_invite", {
+            method: "POST",  
+            body: JSON.stringify({
+                idInvite: idInvite,
+                typeHelper: type
+            }),
+            headers: {  
+                'Accept' : 'application/json',
+                'Content-Type': 'application/json; charset=utf-8' ,
+                'Authorization': 'Bearer '+token, 
+            } 
+        }).then((response) => response.json())
+            .then(async responseJson => {
+                this.setState({activity: false});
+            if(responseJson.error){
+                this.setState({
+                    modalVisible: true,
+                    errors: responseJson.error
+                });
+            } else {
+                
+                this.props.navigation.navigate("Consultorios", this.componentDidMount());
+            }
+        })
+        .catch((error) => {
+            this.setState({activity: false});
+            console.error(error);
+        });
+    }
+    async handleInvites()
+        {
+          console.log("renderizando invites");
+            var token = (await TokenManager.getToken());
+           
+            fetch(host + "list_invites_doctors_for_me", {
+                method: "POST",  
+                body: JSON.stringify({}),
+                headers: {  
+                    'Accept' : 'application/json',
+                    'Content-Type': 'application/json; charset=utf-8' ,
+                    'Authorization': 'Bearer '+token, 
+                } 
+            }).then((response) => response.json())
+                .then(async responseJson => {
+                    
+                if(responseJson.error){
+                    this.setState({
+                        modalVisible: true,
+                        errors: responseJson.error
+                    });
+                } else {
+                    console.log(responseJson.data)
+                    this.setState({
+                        //invites : responseJson.data.helpers,
+                        invitesDoctors: responseJson.data
+                    });
+                    
+                }
+            })
+            .catch((error) => {
+                
+                console.error(error);
+            });
+        }
+
     async componentDidMount(){
       var token = (await TokenManager.getToken());
       this.setState({activity: true});
+      await this.handleInvites();
       fetch(host + "list_officers_for_doctors", {  
           method: "GET",  
           headers: {  
@@ -246,7 +354,14 @@ export default class Consultorio extends Component {
           console.error(error);
       });
     };
-  
+    _onRefresh = () => {
+      this.setState({refreshing: true});
+      this.handleInvites();
+      this.setState({refreshing: false});
+      /* fetchData().then(() => {
+        this.setState({refreshing: false});
+      }); */
+    }
     render(){
       const {time} = this.state;
       if(this.state.activity === true)
@@ -261,7 +376,13 @@ export default class Consultorio extends Component {
         return (
          
             <KeyboardAvoidingView behavior="padding" enabled style={styles.containerForm} key={this.state.uniqueValue}>
-               <ScrollView>
+               <ScrollView
+               refreshControl={
+                <RefreshControl
+                  refreshing={this.state.refreshing}
+                  onRefresh={this._onRefresh}
+                />
+              }>
                 <Modal
                   animationType="slide"
                   transparent={false}
@@ -634,7 +755,100 @@ export default class Consultorio extends Component {
                     </View>
                 </TouchableHighlight>
   
-                
+                {this.state.invitesDoctors.map((invite, i) => { 
+                                return <View 
+                                        key={invite.id}
+                                        style={{
+                                            backgroundColor: "#460000",
+                                            borderRadius: 10,
+                                            padding:5,
+                                            marginTop:10,
+                                            alignSelf: "center",
+                                            alignItems: "stretch",
+                                            flex: 1,
+                                            flexDirection: 'column',
+                                            justifyContent: 'center',
+                                            width:Dimensions.get('window').width - 50,
+                                        }}> 
+                                        {/* <View style={{backgroundColor: 'powderblue',  alignItems: "stretch",}}> */}
+                                            <Text style={{alignSelf:"center"}}>
+                                            { invite.status == 'pendente' ? <Ionicons name="ios-notifications" size={50} color={"#FFD600"}  /> : <Ionicons name="md-briefcase" size={50} color={"#FFD600"} />}
+                                            </Text>
+                                            <Text style={{
+                                            alignSelf: 'center',
+                                            flex: 1,
+                                            color: 'white',
+                                            fontSize:14,
+                                            fontWeight: 'bold' 
+                                            }}><Ionicons name="md-map" size={12} color={"#5199FF"} /> {invite.officer} </Text> 
+                                         
+                                            <Text style={[styles.textDivisor, {marginTop:10, alignSelf:'center'}]}>{invite.doctor_inviter}</Text> 
+                                            <Text style={[styles.textDivisor, {marginTop:10, alignSelf:'center'}]}><Ionicons name="ios-barcode" size={12} color={"#5199FF"} />  {'CRO: '+invite.inviter_cro+' - '+invite.inviter_cro_uf} </Text>
+                                            { invite.status == 'pendente' ? <Text style={[styles.statusPendente, {marginTop:10, alignSelf:'center'}]}> {invite.status} </Text> : null}               
+                                            { invite.status == 'confirmado' ? <Text style={[styles.statusAceito, {marginTop:10, alignSelf:'center'}]}> {invite.status} </Text> : null}
+                                            { invite.status == 'cancelado' ? <Text style={[styles.statusCancelado, {marginTop:10, alignSelf:'center'}]}> {invite.status} </Text> : null}
+                                            { invite.status == 'rejeitado' ? <Text style={[styles.statusRejeitado, {marginTop:10, alignSelf:'center'}]}> {invite.status} </Text> : null}
+                                              
+                                            <View 
+                                              key={invite.id} 
+                                              style={{
+                                                backgroundColor: "#460000",
+                                                borderRadius: 10,
+                                                //padding:5,
+                                                marginTop:10,
+                                                alignSelf: "center",
+                                                alignItems: "center",
+                                                flex: 1,
+                                                flexDirection: 'row',
+                                                justifyContent: 'center',
+                                              }}> 
+                                              {invite.status == 'confirmado' ?  <TouchableHighlight
+                                              style={[styles.btnOptionsCalendar, {marginLeft:10}]}
+                                              onPress={() => {
+                                                this.setModalNewVisible(true);
+                                              }}>
+                                                <View>
+                                                  <Ionicons name="md-calendar" size={18} color={"#FFFFFF"} />
+                                                </View>
+                                            </TouchableHighlight>: null}
+                                            { invite.status == 'pendente' ? <TouchableHighlight
+                                                style={[styles.btnOptionsSuccess, {marginLeft:10}]}
+                                                onPress={() => {
+                                                this.acceptInvite(invite.id, 'odontologo');
+                                                }}>
+                                                <View>
+                                                    <Ionicons name="md-checkmark-circle-outline" size={18} color={"#FFFFFF"} />
+                                                </View>
+                                            </TouchableHighlight>: null}
+                                            { (invite.status == 'confirmado' || invite.status == 'pendente') ? <TouchableHighlight
+                                                style={[styles.btnOptionsDelete, {marginLeft:10}]}
+                                                onPress={() => {
+                                                this.cancelarInvite(invite.id, 'odontologo');
+                                                }}>
+                                                <View>
+                                                    <Ionicons name="md-trash" size={18} color={"#FFFFFF"} />
+                                                </View>
+                                            </TouchableHighlight>: null}
+                                            
+                                             </View>
+                                           {/*  <View 
+                                                style={{
+                                                backgroundColor: "#052555",
+                                                borderRadius: 10,
+                                                padding:5,
+                                                marginTop:10,
+                                                alignSelf: "center",
+                                                alignItems: "center",
+                                                flex: 1,
+                                                flexDirection: 'row',
+                                                justifyContent: 'center',
+                                                }}>                                             
+                                            
+                                            </View> */}
+                                            
+                                        {/*  </View> */}
+                                        </View>
+                            })}
                 
                   {this.state.consultorios.map((consultorio, i) => { 
                       return <View 
@@ -792,7 +1006,7 @@ export default class Consultorio extends Component {
       borderRadius: 40,
       padding: 10,
       width:50,
-      alignSelf: "flex-end",
+      alignSelf: "center",
       justifyContent: "center",
       alignItems: "center"
     },
@@ -805,6 +1019,15 @@ export default class Consultorio extends Component {
       justifyContent: "center",
       alignItems: "center"
     },
+    btnOptionsSuccess:{
+      backgroundColor: "#00CF91",
+      borderRadius: 40,
+      padding: 10,
+      width:50,
+      alignSelf: "center",
+      justifyContent: "center",
+      alignItems: "center"
+  },
     btnEspecialidades: {
       backgroundColor: "#FF008B",
       //textColor: "#FFFFFF",
@@ -853,6 +1076,26 @@ export default class Consultorio extends Component {
       justifyContent: "center",
       alignItems: "center",
       marginTop: 40
+    },
+    statusPendente: {
+      color: "#FFD600",
+      fontSize: 11,
+      fontWeight:"bold"
+    },
+    statusRejeitado: {
+      color: "#F85C50",
+      fontSize: 11,
+      fontWeight:"bold"
+    },
+    statusCancelado: {
+      color: "#F85C50",
+      fontSize: 11,
+      fontWeight:"bold"
+    },
+    statusAceito: {
+      color: "#00DC7D",
+      fontSize: 11,
+      fontWeight:"bold"
     },
     btnPerfil: {
       backgroundColor: "#3095f3",

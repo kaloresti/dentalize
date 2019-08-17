@@ -42,7 +42,8 @@ export default class CadConvite extends Component {
             invites: [],
             
             typeHelper: 'odontologo',
-            cpf: ''
+            cpf: '',
+            invitesDoctors: []
         }
     
         showDateTimePicker = (field) => {
@@ -132,7 +133,8 @@ export default class CadConvite extends Component {
                 } else {
                     console.log(responseJson.data)
                     this.setState({
-                        invites : responseJson.data
+                        invites : responseJson.data.helpers,
+                        invitesDoctors: responseJson.data.doctors
                     });
                     
                 }
@@ -472,6 +474,89 @@ export default class CadConvite extends Component {
                                                     <Ionicons name="md-checkmark-circle-outline" size={18} color={"#FFFFFF"} />
                                                 </View>
                                             </TouchableHighlight>: null}  
+                                           {/*  <View 
+                                                style={{
+                                                backgroundColor: "#052555",
+                                                borderRadius: 10,
+                                                padding:5,
+                                                marginTop:10,
+                                                alignSelf: "center",
+                                                alignItems: "center",
+                                                flex: 1,
+                                                flexDirection: 'row',
+                                                justifyContent: 'center',
+                                                }}>                                             
+                                            
+                                            </View> */}
+                                            
+                                        {/*  </View> */}
+                                        </View>
+                            })}
+
+
+                        
+
+                            {this.state.invitesDoctors.map((invite, i) => { 
+                                return <View 
+                                        key={invite.id}
+                                        style={{
+                                            backgroundColor: "#460000",
+                                            borderRadius: 10,
+                                            padding:5,
+                                            marginTop:10,
+                                            alignSelf: "center",
+                                            alignItems: "stretch",
+                                            flex: 1,
+                                            flexDirection: 'column',
+                                            justifyContent: 'center',
+                                            width:Dimensions.get('window').width - 50,
+                                        }}> 
+                                        {/* <View style={{backgroundColor: 'powderblue',  alignItems: "stretch",}}> */}
+                                            <Text style={{alignSelf:"center"}}>
+                                            <Ionicons name="ios-contacts" size={50} color={"#5199FF"}  />
+                                            </Text>
+                                            <Text style={{
+                                            alignSelf: 'center',
+                                            flex: 1,
+                                            color: 'white',
+                                            fontSize:14,
+                                            fontWeight: 'bold' 
+                                            }}> {invite.doctor_invited}</Text> 
+                                         
+                                            <Text style={[styles.textDivisor, {marginTop:10, alignSelf:'center'}]}><Ionicons name="md-map" size={12} color={"#5199FF"} /> {invite.officer} </Text>
+                                            <Text style={[styles.textDivisor, {marginTop:10, alignSelf:'center'}]}><Ionicons name="ios-barcode" size={12} color={"#5199FF"} />  {'CRO: '+invite.invited_cro+' - '+invite.invited_cro_uf} </Text>
+                                            { invite.status == 'pendente' ? <Text style={[styles.statusPendente, {marginTop:10, alignSelf:'center'}]}> {invite.status} </Text> : null}               
+                                            { invite.status == 'confirmado' ? <Text style={[styles.statusAceito, {marginTop:10, alignSelf:'center'}]}> {invite.status} </Text> : null}
+                                            { invite.status == 'cancelado' ? <Text style={[styles.statusCancelado, {marginTop:10, alignSelf:'center'}]}> {invite.status} </Text> : null}
+                                            { invite.status == 'rejeitado' ? <Text style={[styles.statusRejeitado, {marginTop:10, alignSelf:'center'}]}> {invite.status} </Text> : null}
+                                              
+                                            { invite.status == 'pendente' ? <TouchableHighlight
+                                                style={[styles.btnOptionsDelete, {marginLeft:10}]}
+                                                onPress={() => {
+                                                this.cancelarInvite(invite.id, 'odontologo');
+                                                }}>
+                                                <View>
+                                                    <Ionicons name="md-trash" size={18} color={"#FFFFFF"} />
+                                                </View>
+                                            </TouchableHighlight>: null}
+                                            { invite.status == 'confirmado' ? <TouchableHighlight
+                                                style={[styles.btnOptionsDelete, {marginLeft:10}]}
+                                                onPress={() => {
+                                                this.cancelarInvite(invite.id, 'odontologo');
+                                                }}>
+                                                <View>
+                                                    <Ionicons name="md-trash" size={18} color={"#FFFFFF"} />
+                                                </View>
+                                            </TouchableHighlight>: null}
+                                            { invite.status == 'cancelado' ?  <TouchableHighlight
+                                                style={[styles.btnOptionsSuccess, {marginLeft:10}]}
+                                                onPress={() => {
+                                                this.reenviarInvite(invite.id, 'odontologo');
+                                                }}>
+                                                <View>
+                                                    <Ionicons name="md-checkmark-circle-outline" size={18} color={"#FFFFFF"} />
+                                                </View>
+                                            </TouchableHighlight> : null}  
                                            {/*  <View 
                                                 style={{
                                                 backgroundColor: "#052555",

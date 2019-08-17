@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import { StyleSheet, Alert, Text, Picker , Modal, View, Image, Button,TouchableNativeFeedback, TouchableHighlight, TouchableOpacity, TouchableWithoutFeedback, KeyboardAvoidingView, TextInput, ActivityIndicator } from 'react-native';
+import { StyleSheet, RefreshControl, Alert,Dimensions, Text, Picker , Modal, View, Image, Button,TouchableNativeFeedback, TouchableHighlight, TouchableOpacity, TouchableWithoutFeedback, KeyboardAvoidingView, TextInput, ActivityIndicator } from 'react-native';
 import {creatStackNavigator, createSwitchNavigator, createAppContainer, createStackNavigator, createBottomTabNavigator, withOrientation} from 'react-navigation';
 import { AuthScreen } from './src/modules/Auth';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -29,17 +29,259 @@ class CadInvitesAuxiliar extends Component {
     title: "Invites", 
     header: null
   };
+  state = {
+    errors: [],
+    modalVisible: false,
+    activity: false,
+    invitesDoctors: [],
+    refreshing: false,
+
+  }
+  async cancelarInvite(idInvite, type)
+    {
+        //console.log("Status: "+idStatus);
+        var token = (await TokenManager.getToken());
+        this.setState({activity: true});
+        fetch(host + "cancel_invite", {
+            method: "POST",  
+            body: JSON.stringify({
+                idInvite: idInvite,
+                typeHelper: type
+            }),
+            headers: {  
+                'Accept' : 'application/json',
+                'Content-Type': 'application/json; charset=utf-8' ,
+                'Authorization': 'Bearer '+token, 
+            } 
+        }).then((response) => response.json())
+            .then(async responseJson => {
+                this.setState({activity: false});
+            if(responseJson.error){
+                this.setState({
+                    modalVisible: true,
+                    errors: responseJson.error
+                });
+            } else {
+                
+                this.props.navigation.navigate("Consultorios", this.componentDidMount());
+            }
+        })
+        .catch((error) => {
+            this.setState({activity: false});
+            console.error(error);
+        });
+    }
+
+    async acceptInvite(idInvite, type)
+    {
+        //console.log("Status: "+idStatus);
+        var token = (await TokenManager.getToken());
+        this.setState({activity: true});
+        fetch(host + "accept_helpers_invite", {
+            method: "POST",  
+            body: JSON.stringify({
+                idInvite: idInvite,
+                typeHelper: type
+            }),
+            headers: {  
+                'Accept' : 'application/json',
+                'Content-Type': 'application/json; charset=utf-8' ,
+                'Authorization': 'Bearer '+token, 
+            } 
+        }).then((response) => response.json())
+            .then(async responseJson => {
+                this.setState({activity: false});
+            if(responseJson.error){
+                this.setState({
+                    modalVisible: true,
+                    errors: responseJson.error
+                });
+            } else {
+                
+                this.props.navigation.navigate("Consultorios", this.componentDidMount());
+            }
+        })
+        .catch((error) => {
+            this.setState({activity: false});
+            console.error(error);
+        });
+    }
+    async handleInvites()
+        {
+          console.log("renderizando invites");
+            var token = (await TokenManager.getToken());
+           
+            fetch(host + "list_invites_helpers_for_me", {
+                method: "POST",  
+                body: JSON.stringify({}),
+                headers: {  
+                    'Accept' : 'application/json',
+                    'Content-Type': 'application/json; charset=utf-8' ,
+                    'Authorization': 'Bearer '+token, 
+                } 
+            }).then((response) => response.json())
+                .then(async responseJson => {
+                    
+                if(responseJson.error){
+                    this.setState({
+                        modalVisible: true,
+                        errors: responseJson.error
+                    });
+                } else {
+                    console.log(responseJson.data)
+                    this.setState({
+                        //invites : responseJson.data.helpers,
+                        invitesDoctors: responseJson.data
+                    });
+                    
+                }
+            })
+            .catch((error) => {
+                
+                console.error(error);
+            });
+        }
+  async componentDidMount(){
+    var token = (await TokenManager.getToken());
+    this.setState({activity: true});
+    await this.handleInvites();
+    this.setState({activity: false});
+  }
   async logOff(){
     await TokenManager.setToken('');
     this.props.navigation.navigate("Auth");
   }
-  render(){
-    return (
-      <View style={styles.container}>
-        <Text>Invites Auxiliar</Text> 
-      </View>
-    );
+  _onRefresh = () => {
+    this.setState({refreshing: true});
+    this.handleInvites();
+    this.setState({refreshing: false});
+    /* fetchData().then(() => {
+      this.setState({refreshing: false});
+    }); */
   }
+  render(){
+    
+      if(this.state.activity === true)
+      {
+        return(
+            <View style={styles.containerLoading}>
+                <CirclesLoader color={'#01142F'}/>
+                <TextLoader text="Processando ..." />
+            </View>
+        ); 
+      } else {
+          return (
+          
+              <KeyboardAvoidingView behavior="padding" enabled style={styles.containerForm}>
+                <ScrollView
+                refreshControl={
+                  <RefreshControl
+                    refreshing={this.state.refreshing}
+                    onRefresh={this._onRefresh}
+                  />
+                }>
+                  {this.state.invitesDoctors.map((invite, i) => { 
+                                return <View 
+                                        key={invite.id}
+                                        style={{
+                                            backgroundColor: "#460000",
+                                            borderRadius: 10,
+                                            padding:5,
+                                            marginTop:10,
+                                            alignSelf: "center",
+                                            alignItems: "stretch",
+                                            flex: 1,
+                                            flexDirection: 'column',
+                                            justifyContent: 'center',
+                                            width:Dimensions.get('window').width - 50,
+                                        }}> 
+                                        {/* <View style={{backgroundColor: 'powderblue',  alignItems: "stretch",}}> */}
+                                            <Text style={{alignSelf:"center"}}>
+                                            { invite.status == 'pendente' ? <Ionicons name="ios-notifications" size={50} color={"#FFD600"}  /> : <Ionicons name="md-briefcase" size={50} color={"#FFD600"} />}
+                                            </Text>
+                                            <Text style={{
+                                            alignSelf: 'center',
+                                            flex: 1,
+                                            color: 'white',
+                                            fontSize:14,
+                                            fontWeight: 'bold' 
+                                            }}><Ionicons name="md-map" size={12} color={"#5199FF"} /> {invite.officer} </Text> 
+                                         
+                                            <Text style={[styles.textDivisor, {marginTop:10, alignSelf:'center'}]}>{invite.doctor}</Text> 
+                                            <Text style={[styles.textDivisor, {marginTop:10, alignSelf:'center'}]}><Ionicons name="ios-barcode" size={12} color={"#5199FF"} />  {'CRO: '+invite.cro+' - '+invite.cro_uf} </Text>
+                                            { invite.status == 'pendente' ? <Text style={[styles.statusPendente, {marginTop:10, alignSelf:'center'}]}> {invite.status} </Text> : null}               
+                                            { invite.status == 'confirmado' ? <Text style={[styles.statusAceito, {marginTop:10, alignSelf:'center'}]}> {invite.status} </Text> : null}
+                                            { invite.status == 'cancelado' ? <Text style={[styles.statusCancelado, {marginTop:10, alignSelf:'center'}]}> {invite.status} </Text> : null}
+                                            { invite.status == 'rejeitado' ? <Text style={[styles.statusRejeitado, {marginTop:10, alignSelf:'center'}]}> {invite.status} </Text> : null}
+                                              
+                                            <View 
+                                              key={invite.id} 
+                                              style={{
+                                                backgroundColor: "#460000",
+                                                borderRadius: 10,
+                                                //padding:5,
+                                                marginTop:10,
+                                                alignSelf: "center",
+                                                alignItems: "center",
+                                                flex: 1,
+                                                flexDirection: 'row',
+                                                justifyContent: 'center',
+                                              }}> 
+                                              {invite.status == 'confirmado' ?  <TouchableHighlight
+                                              style={[styles.btnOptionsCalendar, {marginLeft:10}]}
+                                              onPress={() => {
+                                                this.setModalNewVisible(true);
+                                              }}>
+                                                <View>
+                                                  <Ionicons name="md-calendar" size={18} color={"#FFFFFF"} />
+                                                </View>
+                                            </TouchableHighlight>: null}
+                                            { invite.status == 'pendente' ? <TouchableHighlight
+                                                style={[styles.btnOptionsSuccess, {marginLeft:10}]}
+                                                onPress={() => {
+                                                this.acceptInvite(invite.id, 'auxiliar');
+                                                }}>
+                                                <View>
+                                                    <Ionicons name="md-checkmark-circle-outline" size={18} color={"#FFFFFF"} />
+                                                </View>
+                                            </TouchableHighlight>: null}
+                                            { (invite.status == 'confirmado' || invite.status == 'pendente') ? <TouchableHighlight
+                                                style={[styles.btnOptionsDelete, {marginLeft:10}]}
+                                                onPress={() => {
+                                                this.cancelarInvite(invite.id, 'auxiliar');
+                                                }}>
+                                                <View>
+                                                    <Ionicons name="md-trash" size={18} color={"#FFFFFF"} />
+                                                </View>
+                                            </TouchableHighlight>: null}
+                                            
+                                             </View>
+                                           {/*  <View 
+                                                style={{
+                                                backgroundColor: "#052555",
+                                                borderRadius: 10,
+                                                padding:5,
+                                                marginTop:10,
+                                                alignSelf: "center",
+                                                alignItems: "center",
+                                                flex: 1,
+                                                flexDirection: 'row',
+                                                justifyContent: 'center',
+                                                }}>                                             
+                                            
+                                            </View> */}
+                                            
+                                        {/*  </View> */}
+                                        </View>
+                            })}
+                
+                </ScrollView>
+                </KeyboardAvoidingView>
+          );
+            }
+        }
+    
+  
 }
 
 
@@ -462,6 +704,57 @@ const styles = StyleSheet.create({
     alignItems: "center",
     //marginTop: 10
   },
+  btnOptionsEdit: {
+    backgroundColor: "#7EB3FF",
+    borderRadius: 40,
+    width:50,
+    padding: 10,
+    alignSelf: "flex-end",
+    justifyContent: "center",
+    alignItems: "center"
+  },
+  btnOptionsDelete: {
+    backgroundColor: "#B40A1B",
+    borderRadius: 40,
+    padding: 10,
+    width:50,
+    alignSelf: "center",
+    justifyContent: "center",
+    alignItems: "center"
+  },
+  btnOptionsCalendar: {
+    backgroundColor: "#FF6B00",
+    borderRadius: 40,
+    padding: 10,
+    width:50,
+    alignSelf: "flex-end",
+    justifyContent: "center",
+    alignItems: "center"
+  },
+  btnOptionsSuccess:{
+    backgroundColor: "#00CF91",
+    borderRadius: 40,
+    padding: 10,
+    width:50,
+    alignSelf: "center",
+    justifyContent: "center",
+    alignItems: "center"
+},
+statusRejeitado: {
+  color: "#F85C50",
+  fontSize: 11,
+  fontWeight:"bold"
+},
+statusCancelado: {
+  color: "#F85C50",
+  fontSize: 11,
+  fontWeight:"bold"
+},
+statusAceito: {
+  color: "#00DC7D",
+  fontSize: 11,
+  fontWeight:"bold"
+},
   btnSave: {
     backgroundColor: "#45D09E",
     borderRadius: 10,
@@ -610,13 +903,32 @@ const InvitesAuxiliarStack = createStackNavigator({
 });
 
 const AreaLogadoAuxiliar = createBottomTabNavigator({
-  AgendaAuxiliar: {
-    screen: AgendaAuxiliarStack
+  Agenda: {
+    screen: AgendaAuxiliarStack,
+    navigationOptions: () => ({
+      tabBarIcon: ({tintColor}) => (
+        <Ionicons name="md-calendar" size={32} color={tintColor} />
+      )
+    })  
   },
-  InvitesAuxiliar: {
-    screen: InvitesAuxiliarStack
+  Consultorios: {
+    screen: InvitesAuxiliarStack,
+    navigationOptions: () => ({
+      tabBarIcon: ({tintColor}) => (
+        <Ionicons name="md-briefcase" size={32} color={tintColor} />
+      )
+    }) 
   }
-}); 
+}, {
+  tabBarOptions: {
+      showLabel: true, // hide labels
+      activeTintColor: '#E5F0FF', // active icon color
+      inactiveTintColor: '#0043A4',  // inactive icon color
+      style: {
+          backgroundColor: '#5199FF' // TabBar background
+      }
+    }
+  }); 
 
 const AreaDeslogado = createStackNavigator({
   InitStackHome: {
