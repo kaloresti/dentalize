@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import { StyleSheet, Alert, Dimensions, Text, Picker , Modal, View, Image, Button,TouchableNativeFeedback, TouchableHighlight, TouchableOpacity, TouchableWithoutFeedback, KeyboardAvoidingView, TextInput, ActivityIndicator } from 'react-native';
+import { StyleSheet, RefreshControl, Alert, Dimensions, Text, Picker , Modal, View, Image, Button,TouchableNativeFeedback, TouchableHighlight, TouchableOpacity, TouchableWithoutFeedback, KeyboardAvoidingView, TextInput, ActivityIndicator } from 'react-native';
 import {creatStackNavigator, createSwitchNavigator, createAppContainer, createStackNavigator, createBottomTabNavigator, withOrientation} from 'react-navigation';
 import { AuthScreen } from './src/modules/Auth';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -43,7 +43,8 @@ export default class CadConvite extends Component {
             
             typeHelper: 'odontologo',
             cpf: '',
-            invitesDoctors: []
+            invitesDoctors: [],
+            refreshing: false,
         }
     
         showDateTimePicker = (field) => {
@@ -184,7 +185,7 @@ export default class CadConvite extends Component {
         {
             this.setState({activity: true});
 
-            await this.handleOfficers();
+            //await this.handleOfficers();
             await this.handleInvites();
 
             this.setState({activity: false});
@@ -259,7 +260,14 @@ export default class CadConvite extends Component {
                 console.error(error);
             });
         }
-
+        _onRefresh = () => {
+            this.setState({refreshing: true});
+            this.handleOfficers();
+            this.setState({refreshing: false});
+            /* fetchData().then(() => {
+              this.setState({refreshing: false});
+            }); */
+          }
         render(){
 
 
@@ -275,7 +283,29 @@ export default class CadConvite extends Component {
                 return (
                     
                     <KeyboardAvoidingView behavior="padding" enabled  style={styles.containerForm}>
-                        <ScrollView>
+                        <ScrollView
+                         refreshControl={
+                            <RefreshControl
+                              refreshing={this.state.refreshing}
+                              onRefresh={this._onRefresh}
+                            />
+                          }>
+                                <View style={{alignSelf:"center", alignContent:"center", alignItems:"center"}}>
+                                  <Text style={{fontSize:18, color:"#052555", alignContent:"center"}}>Auxiliares</Text>
+                                  <TouchableHighlight
+                                    style={[styles.btnNew, {backgroundColor: "#052555"}]}
+                                    onPress={() => {
+                                        this.setModalNewVisible(true);
+                                    }}>
+                                        <View>
+                                        <Text style={{alignSelf:"center"}}>
+                                            <Ionicons name="ios-add-circle" size={40} color={"#5199FF"}  />
+                                        </Text>
+                                        </View>
+                                </TouchableHighlight>
+                                </View>
+                              
+
                     <Modal
                         animationType="slide"
                         transparent={false}
@@ -311,6 +341,7 @@ export default class CadConvite extends Component {
                                 }}>
                                 <Text>Tentar Novamente</Text>
                             </TouchableHighlight>
+                            
                         </View>
                     
                     </Modal>
@@ -398,21 +429,8 @@ export default class CadConvite extends Component {
                                         </View>
                                     </ScrollView>
                             </Modal>
-                            <TouchableHighlight
-                                style={[styles.btnNew, {backgroundColor: "#052555"}]}
-                                onPress={() => {
-                                    this.setModalNewVisible(true);
-                                }}>
-                                    <View>
-                                    <Text style={{alignSelf:"center"}}>
-                                        <Ionicons name="ios-add-circle" size={40} color={"#5199FF"}  />
-                                    </Text>
-                                    </View>
-                            </TouchableHighlight>
-    
-                            
 
-                            
+                           
                             {this.state.invites.map((invite, i) => { 
                                 return <View 
                                         key={invite.id}

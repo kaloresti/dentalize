@@ -310,6 +310,20 @@ export default class Paciente extends Component {
                           onRefresh={this._onRefresh}
                         />
                       }>
+                          <View style={{alignSelf:"center", alignContent:"center", alignItems:"center"}}>
+                    <Text style={{fontSize:18, color:"#052555", alignContent:"center"}}>Pacientes</Text>
+                    <TouchableHighlight
+                      style={[styles.btnNew, {backgroundColor: "#052555"}]}
+                      onPress={() => {
+                        this.setModalNewVisible(true);
+                      }}>
+                        <View>
+                          <Text style={{alignSelf:"center"}}>
+                            <Ionicons name="ios-add-circle" size={40} color={"#5199FF"}  />
+                          </Text>
+                        </View>
+                    </TouchableHighlight>
+                  </View>
                     <Modal
                         animationType="slide"
                         transparent={false}
@@ -361,8 +375,12 @@ export default class Paciente extends Component {
                                         paddingLeft: 20,
                                         paddingRight: 20
                                     }}>
+                                         <View style={{alignSelf:"center", alignContent:"center", alignItems:"center"}}>
+                                  <Text style={{fontSize:18, color:"#E5F0FF", alignContent:"center"}}>Novo Paciente</Text>
+                                  
+                                </View>
                                     {/* <Image style={styles.appImageMd} source={{ uri: 'http://odontologiadrkikuchi.com.br/wp-content/uploads/2017/03/cropped-tooth-icon.png' }} /> */}
-                                            <Text style={[styles.textDivisor, {color: 'yellow'}]}>Consultório</Text>
+                                            <Text style={[styles.textDivisor, {color: 'yellow'}]}>Escolha um consultório</Text>
                                             <View style={{flex:.5, alignSelf: "stretch", justifyContent:'center', height: 40,
                                                     borderBottomWidth: 2, 
                                                     borderBottomColor: "#fff",
@@ -378,7 +396,7 @@ export default class Paciente extends Component {
                                                 })}
                                                 </Picker>
                                             </View>
-                                            <Text style={[styles.textDivisor, {color: 'yellow'}]}>Plano</Text>
+                                            <Text style={[styles.textDivisor, {color: 'yellow'}]}>Escolha o Plano do Paciente</Text>
                                             <View style={{flex:.5, alignSelf: "stretch", justifyContent:'center', height: 40,
                                                     borderBottomWidth: 2, 
                                                     borderBottomColor: "#fff",
@@ -395,7 +413,7 @@ export default class Paciente extends Component {
                                                 </Picker>
                                             </View>
 
-                                            <Text style={[styles.textDivisor, {color: 'yellow'}]}>Nome do paciente</Text>
+                                            <Text style={[styles.textDivisor, {color: 'yellow'}]}>Nome completo</Text>
                                             <TextInput 
                                             onChangeText={this.handleChange('name')}
                                             value={this.state.name}
@@ -500,8 +518,8 @@ export default class Paciente extends Component {
                                                 }}
                                                 //onChangeText={this.handleChange('cpf')}
                                                 style={styles.formTextField} placeholder="CEP" />
-                                            <Text style={[styles.textDivisor, {color: 'yellow'}]}>{this.state.postal_code} - {this.state.uf} - {this.state.city}</Text>
-                                            <Text style={[styles.textDivisor, {color: 'yellow'}]}>{this.state.address}</Text>
+                                            <Text style={{color: 'yellow'}}>{this.state.postal_code} - {this.state.uf} - {this.state.city}</Text>
+                                            <Text style={{color: 'yellow'}}>{this.state.address}</Text>
                                             <TextInput 
                                             value={this.state.number}
                                             editable={this.state.numberVisivle}
@@ -574,21 +592,7 @@ export default class Paciente extends Component {
                                         </TouchableHighlight>
                                     </View>
                                 </ScrollView>
-                        </Modal>
-
-                        <TouchableHighlight
-                            style={[styles.btnNew, {backgroundColor: "#052555"}]}
-                            onPress={() => {
-                                this.setModalNewVisible(true);
-                            }}>
-                                <View>
-                                <Text style={{alignSelf:"center"}}>
-                                    <Ionicons name="ios-add-circle" size={40} color={"#5199FF"}  />
-                                </Text>
-                                </View>
-                        </TouchableHighlight>
-  
-                        
+                        </Modal>                     
                         
                             
                             <View style={{flex:.5, alignSelf: "stretch", justifyContent:'center', height: 40,
@@ -858,8 +862,8 @@ const styles = StyleSheet.create({
         fontSize: 15
     },
     textDivisor: {
-        marginTop: 7,
-        marginBottom: 7,
+        marginTop: 15,
+        marginBottom: 15,
       color: "#fff",
       fontSize: 11
     },

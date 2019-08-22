@@ -180,6 +180,10 @@ class CadInvitesAuxiliar extends Component {
                     onRefresh={this._onRefresh}
                   />
                 }>
+                  <View style={{alignSelf:"center", alignContent:"center", alignItems:"center"}}>
+                                  <Text style={{fontSize:18, color:"#052555", alignContent:"center"}}>Consultórios</Text>
+                                 
+                                </View>
                   {this.state.invitesDoctors.map((invite, i) => { 
                                 return <View 
                                         key={invite.id}

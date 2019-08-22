@@ -383,6 +383,20 @@ export default class Consultorio extends Component {
                   onRefresh={this._onRefresh}
                 />
               }>
+                  <View style={{alignSelf:"center", alignContent:"center", alignItems:"center"}}>
+                    <Text style={{fontSize:18, color:"#052555", alignContent:"center"}}>Consultórios</Text>
+                    <TouchableHighlight
+                      style={[styles.btnNew, {backgroundColor: "#052555"}]}
+                      onPress={() => {
+                        this.setModalNewVisible(true);
+                      }}>
+                        <View>
+                          <Text style={{alignSelf:"center"}}>
+                            <Ionicons name="ios-add-circle" size={40} color={"#5199FF"}  />
+                          </Text>
+                        </View>
+                    </TouchableHighlight>
+                  </View>
                 <Modal
                   animationType="slide"
                   transparent={false}
@@ -424,6 +438,7 @@ export default class Consultorio extends Component {
                   transparent={false}
                   visible={this.state.modalNewVisible}>
                     <ScrollView>
+                   
                     <View style={{
                         flex: 1,
                         backgroundColor: '#01142F',
@@ -433,12 +448,16 @@ export default class Consultorio extends Component {
                         paddingLeft: 20,
                         paddingRight: 20
                       }}>
+                         <View style={{alignSelf:"center", alignContent:"center", alignItems:"center"}}>
+                                  <Text style={{fontSize:18, color:"#E5F0FF", alignContent:"center"}}>Novo Consultório</Text>
+                                  
+                                </View>
                         {/* <Image style={styles.appImageMd} source={{ uri: 'http://odontologiadrkikuchi.com.br/wp-content/uploads/2017/03/cropped-tooth-icon.png' }} /> */}
-                        <Text style={[styles.textDivisor, {color: 'yellow'}]}>Dados Gerais</Text>
+                        <Text style={[styles.textDivisor, {color: 'yellow'}]}>Preencha os dados abaixo com atenção</Text>
                         <TextInput 
                           onChangeText={this.handleChange('unique_code_cfo')}
                           value={this.state.unique_code_cfo}
-                          style={styles.formTextField} placeholder="Código único"  maxLength = {150}></TextInput>
+                          style={styles.formTextField} placeholder="Código de vinculo ao CRO"  maxLength = {150}></TextInput>
 
                         <TextInput 
                           onChangeText={this.handleChange('name')}
@@ -505,8 +524,8 @@ export default class Consultorio extends Component {
                             }}
                             //onChangeText={this.handleChange('cpf')}
                             style={styles.formTextField} placeholder="CEP" />
-                        <Text style={[styles.textDivisor, {color: 'yellow'}]}>{this.state.postal_code} - {this.state.uf} - {this.state.city}</Text>
-                        <Text style={[styles.textDivisor, {color: 'yellow'}]}>{this.state.address}</Text>
+                        <Text style={{color: 'yellow'}}>{this.state.postal_code} - {this.state.uf} - {this.state.city}</Text>
+                        <Text style={{color: 'yellow'}}>{this.state.address}</Text>
                         <TextInput 
                           value={this.state.number}
                           editable={this.state.numberVisivle}
@@ -563,7 +582,7 @@ export default class Consultorio extends Component {
                           value={this.state.email}
                           style={styles.formTextField} placeholder="Email principal"  maxLength = {250}></TextInput>
   
-                    <Text style={[styles.textDivisor, {color: 'yellow'}]}>Horários de Atendimento</Text>
+                    <Text style={[styles.textDivisor, {color: 'yellow'}]}>Horários de Atendimento (Opcional)</Text>
                         <Text style={styles.textDivisor}>Segunda-feira</Text>
                         <View style={{flexDirection: 'row', alignItems: 'center'}}>
                           <View style={{flex:.5}}>
@@ -711,7 +730,7 @@ export default class Consultorio extends Component {
                               />
                           </View>
                         </View> 
-                        <Text style={[styles.textDivisor, {color: 'yellow'}]}>Planos de atendimento</Text>
+                        <Text style={[styles.textDivisor, {color: 'yellow'}]}>Planos de atendimento (opcional)</Text>
                         <View> 
                           <SectionedMultiSelect
                             items={this.state.plans}     
@@ -743,17 +762,7 @@ export default class Consultorio extends Component {
                     </ScrollView>
                 </Modal>
                 
-                <TouchableHighlight
-                  style={[styles.btnNew, {backgroundColor: "#052555"}]}
-                  onPress={() => {
-                    this.setModalNewVisible(true);
-                  }}>
-                    <View>
-                      <Text style={{alignSelf:"center"}}>
-                        <Ionicons name="ios-add-circle" size={40} color={"#5199FF"}  />
-                      </Text>
-                    </View>
-                </TouchableHighlight>
+               
   
                 {this.state.invitesDoctors.map((invite, i) => { 
                                 return <View 
@@ -1112,7 +1121,9 @@ export default class Consultorio extends Component {
     },
     textDivisor: {
       color: "#fff",
-      fontSize: 11
+      fontSize: 11,
+      marginTop:10,
+      marginBottom:10
     },
     formTextField: {
         height: 40,
