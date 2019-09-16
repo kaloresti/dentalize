@@ -45,5 +45,7 @@ Route::group(['middleware' => 'auth:api'], function(){
     Route::post('accept_doctors_invite' , 'API\InvitersController@acceptDoctorsInvite');
     Route::post('accept_helpers_invite' , 'API\InvitersController@acceptHelpersInvite');
 
-    
+    Route::post('owner_clinical_consults/load_officers', 'API\ClinicalConsultsController@loadOfficers');
+    Route::post('owner_clinical_consults/load_doctors', 'API\ClinicalConsultsController@loadDoctors');
+
 });

@@ -101,10 +101,10 @@ class PatientController extends Controller
         $input = json_decode($request->getContent());
 
         $patients = DB::table("patients")
-                        ->join("officers_has_patients", "patients.id", "=", "officers_has_patients.patients_id")
-                        //->where("officers_has_patients.officers_id", $input->officers_id)
-                        ->where("officers_has_patients.doctors_id", $doctor->id)
-                        ->get();                                                                                                                                                                                                                         
+            ->join("officers_has_patients", "patients.id", "=", "officers_has_patients.patients_id")
+            //->where("officers_has_patients.officers_id", $input->officers_id)
+            ->where("officers_has_patients.doctors_id", $doctor->id)
+            ->get();                                                                                                                                                                                                                         
         
         return response()->json(['success'=>true, 'message' => "Cadastro efetuado com sucesso!" , 'data' => $patients], $this->successStatus);
     }
