@@ -330,13 +330,26 @@ class Agenda extends Component {
     title: "",
     header: null
   };
+
   constructor(props) {
     super(props);
-    this.state = {
-      selectedStartDate: null,
-      selectedEndDate: null,
-    };
+    
     this.onDateChange = this.onDateChange.bind(this);
+  }
+  state = {
+    selectedStartDate: null,
+    selectedEndDate: null,
+    activity: false,
+    officers:[],
+    officers_id: 0,
+    doctors:[],
+    doctors_id: 0,
+    modalNewVisible: false,
+  };
+
+  async logOff(){
+    await TokenManager.setToken('');
+    this.props.navigation.navigate("Auth");
   }
 
   onDateChange(date, type) {
@@ -351,47 +364,201 @@ class Agenda extends Component {
       });
     }
   }
-  async logOff(){
-    await TokenManager.setToken('');
-    this.props.navigation.navigate("Auth");
+
+  async loadOfficers()
+  {
+    var token = (await TokenManager.getToken());
+    this.setState({activity: true});
+    fetch(host + "owner_clinical_consults/load_officers", {
+        method: "POST",  
+        body: JSON.stringify({}),
+        headers: {  
+            'Accept' : 'application/json',
+            'Content-Type': 'application/json; charset=utf-8' ,   
+            'Authorization': 'Bearer '+token,   
+        } 
+    }).then((response) => response.json())
+        .then(async responseJson => {
+            this.setState({activity: false});
+        if(responseJson.error){
+            this.setState({
+                modalVisible: true,
+                errors: responseJson.error
+            });
+        } else {  
+            console.log(responseJson.data); 
+            this.setState({
+              officers: responseJson.data
+            });
+        }
+    })
+    .catch((error) => {
+        this.setState({activity: false});
+        console.error(error);
+    });
   }
-  render(){
+
+  async loadDoctors(itemValue, itemIndex)
+  {
+    this.setState({officers_id: itemValue})
+    var token = (await TokenManager.getToken());
+    this.setState({activity: true});
+    fetch(host + "owner_clinical_consults/load_doctors", {
+        method: "POST",  
+        body: JSON.stringify({officers_id: this.state.officers_id}),
+        headers: {  
+            'Accept' : 'application/json',
+            'Content-Type': 'application/json; charset=utf-8' ,   
+            'Authorization': 'Bearer '+token,   
+        } 
+    }).then((response) => response.json())
+        .then(async responseJson => {
+            this.setState({activity: false});
+        if(responseJson.error){
+            this.setState({
+                modalVisible: true,
+                errors: responseJson.error
+            });
+        } else {
+            console.log(responseJson.data); 
+            this.setState({
+              doctors: responseJson.data
+            });
+        }
+    })
+    .catch((error) => {
+        this.setState({activity: false});
+        console.error(error);
+    });
+  }
+  
+  async componentDidMount()
+  {
+    await this.loadOfficers();
+  }
+
+  newConsult()
+  {
+    this.setState({
+      modalNewVisible: true
+    });
+  }
+  
+  render(){  
     const { selectedStartDate, selectedEndDate } = this.state;
     const minDate = new Date(2017, 12, 30); // Today
     const maxDate = new Date(2019, 12, 31);
     const startDate  =  selectedStartDate ? selectedStartDate.toString() : '';
     const endDate = selectedEndDate ? selectedEndDate.toString() : '';
 
+    if(this.state.activity === true)
+    {
+      return(
+          <View style={styles.containerLoading}>
+              <CirclesLoader color={'#01142F'}/>
+              <TextLoader text="Processando ..." />
+          </View>   
+      ); 
+    } 
+    else {
+      return (
+        <KeyboardAvoidingView behavior="padding" enabled key={this.state.uniqueValue}>
+        <ScrollView    
+            refreshControl={
+            <RefreshControl   
+              refreshing={this.state.refreshing}
+              onRefresh={this._onRefresh}
+            />
+          }>
+        <View style={styles.containerAgenda}>
+          <View style={{backgroundColor: '#E5F0FF', borderRadius: 10}}>
+            <CalendarPicker
+              startFromMonday={true}
+              allowRangeSelection={true}
+              minDate={minDate}
+              maxDate={maxDate}
+              weekdays={['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab', 'Dom']}
+              months={['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro']}
+              previousTitle="Anterior"
+              nextTitle="Próximo"
+              todayBackgroundColor="#01142F"
+              selectedDayColor="#1771F1"
+              selectedDayTextColor="#FFFFFF"
+              scaleFactor={375}
+              onDateChange={this.onDateChange}
+            />
+          </View>
 
-    return (
-      <View style={styles.containerAgenda}>
-        <View
-          style={{backgroundColor: '#E5F0FF', borderRadius: 10}}>
-          <CalendarPicker
-            startFromMonday={true}
-            allowRangeSelection={true}
-            minDate={minDate}
-            maxDate={maxDate}
-            weekdays={['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab', 'Dom']}
-            months={['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro']}
-            previousTitle="Anterior"
-            nextTitle="Próximo"
-            todayBackgroundColor="#01142F"
-            selectedDayColor="#1771F1"
-            selectedDayTextColor="#FFFFFF"
-            scaleFactor={375}
-            onDateChange={this.onDateChange}
-          />
+          <View>
+            <Text>SELECTED START DATE:{ startDate }</Text>
+            <Text>SELECTED END DATE:{ endDate }</Text>
+          </View>
+          <TouchableOpacity onPress={()=> this.logOff()} style={styles.btnCancel}>
+              <Text style={styles.textColor}>Sair</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={()=> this.newConsult()} style={styles.btnSave}>
+              <Text style={styles.textColor}>Nova consulta</Text>
+          </TouchableOpacity>
+          <ScrollView>
+          <Modal
+            animationType="slide"
+            transparent={false}
+            visible={this.state.modalNewVisible}>
+                <View style={{
+                  flex: 1,
+                  backgroundColor: '#01142F',
+                  //alignItems: 'center',
+                  justifyContent: 'center', 
+                  paddingTop:20,
+                  paddingLeft: 20,
+                  paddingRight: 20
+                }}>
+                  {/* <Image style={styles.appImageMd} source={{ uri: 'http://odontologiadrkikuchi.com.br/wp-content/uploads/2017/03/cropped-tooth-icon.png' }} /> */}
+                  <Text style={[styles.textDivisor, {color: 'yellow', alignContent: 'center'}]}>Escolha um consultório para continuar</Text>
+                  <View style={{flex:.1, alignSelf: "stretch", justifyContent:'center', height: 40,
+                    borderBottomWidth: 2, 
+                    borderBottomColor: "#fff",
+                    color: "#fff",
+                    marginBottom: 10}}>
+                      <Picker style={{color:"#fff"}}
+                        selectedValue={this.state.officers_id}
+                        onValueChange={(itemValue, itemIndex) => this.loadDoctors(itemValue, itemIndex) }>
+                          <Picker.Item key={0} value={0} label={'Selecione'} />
+                            {this.state.officers.map((office, i) => { 
+                                return <Picker.Item key={i} value={office.id} label={office.name } />
+                            })}
+                      </Picker>
+                  </View>
+                  <Text style={[styles.textDivisor, {color: 'yellow', alignContent: 'center'}]}>Escolha um dentista</Text>
+                  <View style={{flex:.1, alignSelf: "stretch", justifyContent:'center', height: 40,
+                    borderBottomWidth: 2, 
+                    borderBottomColor: "#fff",
+                    color: "#fff",
+                    marginBottom: 10}}>
+                      <Picker style={{color:"#fff"}}
+                        selectedValue={this.state.doctors_id}
+                        onValueChange={(itemValue, itemIndex) => this.loadDoctors(itemValue, itemIndex) }>
+                          <Picker.Item key={0} value={0} label={'Selecione'} />
+                            {this.state.doctors.map((doctor, i) => { 
+                                return <Picker.Item key={i} value={doctor.id} label={doctor.name } />
+                            })}
+                      </Picker>
+                  </View>
+                  <TouchableOpacity style={styles.btnSave}>
+                      <Text style={styles.textColor}>Salvar</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={()=> this.setState({modalNewVisible:false})} style={styles.btnCancel}>
+                      <Text style={styles.textColor}>cancelar</Text>
+                  </TouchableOpacity>
+                </View>
+              
+          </Modal>
+          </ScrollView>
         </View>
-        <View>
-          <Text>SELECTED START DATE:{ startDate }</Text>
-          <Text>SELECTED END DATE:{ endDate }</Text>
-        </View>
-        <TouchableOpacity
-                  onPress={()=> this.logOff()}
-                  style={styles.btnCancel}><Text style={styles.textColor}>Sair</Text></TouchableOpacity>
-      </View>
-    );
+        </ScrollView>
+        </KeyboardAvoidingView>
+      );
+    }
   }
 }
 
