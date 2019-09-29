@@ -47,5 +47,6 @@ Route::group(['middleware' => 'auth:api'], function(){
 
     Route::post('owner_clinical_consults/load_officers', 'API\ClinicalConsultsController@loadOfficers');
     Route::post('owner_clinical_consults/load_doctors', 'API\ClinicalConsultsController@loadDoctors');
+    Route::post('owner_clinical_consults/load_create_consult', 'API\ClinicalConsultsController@loadCreateConsult');
 
 });

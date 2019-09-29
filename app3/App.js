@@ -20,6 +20,7 @@ import {CirclesLoader, PulseLoader, TextLoader, DotsLoader} from 'react-native-i
 import DateTimePicker from "react-native-modal-datetime-picker";
 import { ScrollView } from 'react-native-gesture-handler';
 import SectionedMultiSelect from 'react-native-sectioned-multi-select';
+import Moment from 'moment';
 
 const host = "http://192.168.0.20:81/api/";
 
@@ -344,15 +345,33 @@ class Agenda extends Component {
     officers_id: 0,
     doctors:[],
     doctors_id: 0,
+    specialities: [],
+    specialities_id: 0,
+    plans: [],
+    plans_id: 0,
+    procediments: '',
     modalNewVisible: false,
+    startedAtVisible: false,
+    started_at: "",
+    finishedAtVisible: false,
+    finished_at: "",
+    descriptions: "",
+    procediments: "",
+
   };
 
+  handleChange = nomeDoCampo => {
+    return valorDoCampo => {
+        this.setState({[nomeDoCampo] : valorDoCampo})
+    };
+  }
   async logOff(){
     await TokenManager.setToken('');
     this.props.navigation.navigate("Auth");
   }
 
   onDateChange(date, type) {
+
     if (type === 'END_DATE') {
       this.setState({
         selectedEndDate: date,
@@ -400,12 +419,12 @@ class Agenda extends Component {
 
   async loadDoctors(itemValue, itemIndex)
   {
-    this.setState({officers_id: itemValue})
+    
     var token = (await TokenManager.getToken());
     this.setState({activity: true});
     fetch(host + "owner_clinical_consults/load_doctors", {
         method: "POST",  
-        body: JSON.stringify({officers_id: this.state.officers_id}),
+        body: JSON.stringify({officers_id: itemValue}),
         headers: {  
             'Accept' : 'application/json',
             'Content-Type': 'application/json; charset=utf-8' ,   
@@ -422,8 +441,9 @@ class Agenda extends Component {
         } else {
             console.log(responseJson.data); 
             this.setState({
-              doctors: responseJson.data
+              doctors: responseJson.data, officers_id: itemValue
             });
+            
         }
     })
     .catch((error) => {
@@ -432,6 +452,60 @@ class Agenda extends Component {
     });
   }
   
+  async loadCreateConsult(itemValue, itemIndex)
+  {
+    
+    var token = (await TokenManager.getToken());
+    this.setState({activity: true});
+    fetch(host + "owner_clinical_consults/load_create_consult", {
+        method: "POST",  
+        body: JSON.stringify({officers_id: this.state.officers_id, doctors_id: itemValue}),
+        headers: {  
+            'Accept' : 'application/json',
+            'Content-Type': 'application/json; charset=utf-8' ,   
+            'Authorization': 'Bearer '+token,   
+        } 
+    }).then((response) => response.json())
+        .then(async responseJson => {
+            this.setState({activity: false});
+        if(responseJson.error){
+            this.setState({
+                modalVisible: true,
+                errors: responseJson.error
+            });
+        } else {
+            //console.log(responseJson.data); 
+            this.setState({
+              doctors_id: itemValue,
+              plans: responseJson.data.plans,
+              specialities: responseJson.data.specialities
+            });
+        }
+    })
+    .catch((error) => {
+        this.setState({activity: false});
+        console.error(error);
+    });
+  }
+  showDateTimePicker = (field) => {
+    //console.log(field);
+    this.setState({ [field]: true , timeInput: field});
+  };
+
+  hideDateTimePicker = (field) => {
+  //console.log(field);
+      this.setState({ [field]: false , timeInput: field});
+  };
+
+  handleDatePicked = (date) => {
+      Moment.locale('en');  
+      let data = Moment(date.date).format("MM-DD-YYYY HH:mm:ss");
+      this.setState({  
+          [date.field]: data
+      }); 
+      this.hideDateTimePicker(this.state.timeInput);
+  };
+
   async componentDidMount()
   {
     await this.loadOfficers();
@@ -462,15 +536,19 @@ class Agenda extends Component {
     } 
     else {
       return (
-        <KeyboardAvoidingView behavior="padding" enabled key={this.state.uniqueValue}>
         <ScrollView    
             refreshControl={
             <RefreshControl   
               refreshing={this.state.refreshing}
-              onRefresh={this._onRefresh}
+              onRefresh={this.loadOfficers}
             />
           }>
+        <KeyboardAvoidingView behavior="padding" enabled key={this.state.uniqueValue}>
+       
+          
         <View style={styles.containerAgenda}>
+        
+            
           <View style={{backgroundColor: '#E5F0FF', borderRadius: 10}}>
             <CalendarPicker
               startFromMonday={true}
@@ -499,23 +577,25 @@ class Agenda extends Component {
           <TouchableOpacity onPress={()=> this.newConsult()} style={styles.btnSave}>
               <Text style={styles.textColor}>Nova consulta</Text>
           </TouchableOpacity>
-          <ScrollView>
+          
           <Modal
             animationType="slide"
             transparent={false}
             visible={this.state.modalNewVisible}>
+              
                 <View style={{
                   flex: 1,
-                  backgroundColor: '#01142F',
+                  backgroundColor: '#01142F',  
                   //alignItems: 'center',
                   justifyContent: 'center', 
                   paddingTop:20,
                   paddingLeft: 20,
                   paddingRight: 20
                 }}>
-                  {/* <Image style={styles.appImageMd} source={{ uri: 'http://odontologiadrkikuchi.com.br/wp-content/uploads/2017/03/cropped-tooth-icon.png' }} /> */}
-                  <Text style={[styles.textDivisor, {color: 'yellow', alignContent: 'center'}]}>Escolha um consultório para continuar</Text>
-                  <View style={{flex:.1, alignSelf: "stretch", justifyContent:'center', height: 40,
+                  <ScrollView>
+                  {/* {<Image style={styles.appImageMd} source={{ uri: 'http://odontologiadrkikuchi.com.br/wp-content/uploads/2017/03/cropped-tooth-icon.png' }} /> } */}
+                  
+                  <View style={{flex:.1, alignSelf: "stretch", justifyContent:'center', height: 50,
                     borderBottomWidth: 2, 
                     borderBottomColor: "#fff",
                     color: "#fff",
@@ -523,40 +603,191 @@ class Agenda extends Component {
                       <Picker style={{color:"#fff"}}
                         selectedValue={this.state.officers_id}
                         onValueChange={(itemValue, itemIndex) => this.loadDoctors(itemValue, itemIndex) }>
-                          <Picker.Item key={0} value={0} label={'Selecione'} />
+                          <Picker.Item key={0} value={0} label={'Selecione um consultório'} />
                             {this.state.officers.map((office, i) => { 
                                 return <Picker.Item key={i} value={office.id} label={office.name } />
                             })}
                       </Picker>
                   </View>
-                  <Text style={[styles.textDivisor, {color: 'yellow', alignContent: 'center'}]}>Escolha um dentista</Text>
-                  <View style={{flex:.1, alignSelf: "stretch", justifyContent:'center', height: 40,
+                  
+                  
+
+                    { this.state.officers_id > 0 ?  <View style={{flex:.1, alignSelf: "stretch", justifyContent:'center', height: 50,
+                      borderBottomWidth: 2, 
+                      borderBottomColor: "#fff",
+                      color: "#fff",
+                      marginBottom: 10}}><View>
+                    
+                    <Picker style={{color:"#fff"}}
+                      selectedValue={this.state.doctors_id}
+                      onValueChange={(itemValue, itemIndex) => this.loadCreateConsult(itemValue, itemIndex) }>
+                        <Picker.Item key={0} value={0} label={'Selecione um dentista'} />
+                          {this.state.doctors.map((doctor, i) => { 
+                              return <Picker.Item key={i} value={doctor.id} label={doctor.name } />
+                          })}
+                    </Picker>
+                    </View>
+                    </View> : null} 
+
+                    { this.state.doctors_id > 0 ?  <View style={{flex:.1, alignSelf: "stretch", justifyContent:'center', height: 50,
+                    borderBottomWidth: 2, 
+                    borderBottomColor: "#fff",
+                    color: "#fff",
+                    marginBottom: 10}}><View>
+                     
+                    <Picker style={{color:"#fff"}}
+                          selectedValue={this.state.specialities_id}
+                          onValueChange={(itemValue, itemIndex) => this.setState({specialities_id : itemValue}) }>
+                            <Picker.Item key={0} value={0} label={'Selecione uma especialidade'} />
+                              {this.state.specialities.map((specialit, i) => { 
+                                  return <Picker.Item key={i} value={specialit.id} label={specialit.name } />
+                              })}
+                        </Picker>
+                       
+                    </View>
+                    
+                    </View> 
+
+                    : null} 
+
+
+                    { this.state.doctors_id > 0 ?  <View style={{flex:.1, alignSelf: "stretch", justifyContent:'center', height: 50,
+                    borderBottomWidth: 2, 
+                    borderBottomColor: "#fff",
+                    color: "#fff",
+                    marginBottom: 10}}><View>
+                      
+                    <Picker style={{color:"#fff"}}
+                          selectedValue={this.state.plans_id}
+                          onValueChange={(itemValue, itemIndex) => this.setState({plans_id : itemValue}) }>
+                            <Picker.Item key={0} value={0} label={'Selecione um plano'} />
+                              {this.state.plans.map((plan, i) => { 
+                                  return <Picker.Item key={i} value={plan.id} label={plan.name } />
+                              })}
+                        </Picker>
+                       
+                    </View>
+                    
+                   
+                    </View> 
+                    : null}
+
+                    { this.state.doctors_id > 0 ?  <View style={{flex:.1, alignSelf: "stretch", justifyContent:'center', height: 50,
+                    borderBottomWidth: 2, 
+                    borderBottomColor: "#fff",
+                    color: "#fff",
+                    marginBottom: 20}}><View>
+                    <Text style={[styles.textDivisor, {color: 'yellow'}]}>Horário de Incício</Text>
+                    <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                        <View style={{flex:1}}>
+                            <Button title={this.state.started_at} onPress={()=>this.showDateTimePicker('startedAtVisible')} />
+                            <DateTimePicker
+                            mode={'datetime'}
+                            isVisible={this.state.startedAtVisible}
+                            onConfirm={(date)=>this.handleDatePicked({date:date, field: 'started_at'})}
+                            onCancel={() => this.hideDateTimePicker('startedAtVisible')} 
+                            />
+                        </View>
+                    </View>
+                       
+                    </View>
+
+                    </View> 
+
+                    : null}
+                    
+                    { this.state.doctors_id > 0 ?  <View style={{flex:.1, alignSelf: "stretch", justifyContent:'center', height: 50,
+                    borderBottomWidth: 2, 
+                    borderBottomColor: "#fff",
+                    color: "#fff",
+                    marginBottom: 10}}><View>
+                    <Text style={[styles.textDivisor, {color: 'yellow'}]}>Horário Final</Text>
+                    <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                        <View style={{flex:1}}>
+                            <Button title={this.state.finished_at} onPress={()=>this.showDateTimePicker('finishedAtVisible')} />
+                            <DateTimePicker
+                            mode={'datetime'}
+                            isVisible={this.state.finishedAtVisible}
+                            onConfirm={(date)=>this.handleDatePicked({date:date, field: 'finished_at'})}
+                            onCancel={() => this.hideDateTimePicker('finishedAtVisible')} 
+                            />
+                        </View>
+                    </View>
+                      
+                    </View>
+
+                    </View> 
+
+                    : null}
+
+                    { this.state.doctors_id > 0 ?  <View style={{flex:.1, alignSelf: "stretch", justifyContent:'center', height: 100,
                     borderBottomWidth: 2, 
                     borderBottomColor: "#fff",
                     color: "#fff",
                     marginBottom: 10}}>
-                      <Picker style={{color:"#fff"}}
-                        selectedValue={this.state.doctors_id}
-                        onValueChange={(itemValue, itemIndex) => this.loadDoctors(itemValue, itemIndex) }>
-                          <Picker.Item key={0} value={0} label={'Selecione'} />
-                            {this.state.doctors.map((doctor, i) => { 
-                                return <Picker.Item key={i} value={doctor.id} label={doctor.name } />
-                            })}
-                      </Picker>
-                  </View>
+                   
+                    <View >
+                    
+                      <TextInput
+                        style={{color: "white"}}
+                        underlineColorAndroid="transparent"
+                        placeholder="descreva os procedimentos a serem realizados"
+                        placeholderTextColor="white"
+                        numberOfLines={10}
+                        multiline={true}
+                        onChangeText={this.handleChange('procediments')}
+                      />
+                    </View>
+                      
+                    </View>
+                    : null}
+
+                    { this.state.doctors_id > 0 ?  <View style={{flex:.1, alignSelf: "stretch", justifyContent:'center', height: 100,
+                    borderBottomWidth: 2, 
+                    borderBottomColor: "#fff",
+                    color: "#fff",
+                    marginBottom: 10}}>
+                   
+                    <View >
+                    
+                      <TextInput
+                        style={{color: "white"}}
+                        underlineColorAndroid="transparent"
+                        placeholder="descreva outros detalhes"
+                        placeholderTextColor="white"
+                        numberOfLines={10}
+                        multiline={true}
+                        onChangeText={this.handleChange('descriptions')}
+                      />
+                    </View>
+                      
+                    </View>
+
+                    : null}
+
+                     
+                  
+
+                        
+                  
                   <TouchableOpacity style={styles.btnSave}>
-                      <Text style={styles.textColor}>Salvar</Text>
+                      <Text style={styles.textColor}>Agendar</Text>
                   </TouchableOpacity>
                   <TouchableOpacity onPress={()=> this.setState({modalNewVisible:false})} style={styles.btnCancel}>
                       <Text style={styles.textColor}>cancelar</Text>
                   </TouchableOpacity>
+
+                  </ScrollView>
                 </View>
-              
+                
           </Modal>
-          </ScrollView>
+          
+         
         </View>
-        </ScrollView>
+        
         </KeyboardAvoidingView>
+        </ScrollView>
+
       );
     }
   }
@@ -973,6 +1204,14 @@ statusAceito: {
     paddingLeft: 50,
     paddingRight: 50
   },
+  textAreaContainer: {
+    borderColor: 'grey',
+    borderWidth: 1,
+    padding: 5
+  },
+  textArea: {
+    height: 150
+  }
 });
 
 // -----------
