@@ -14,6 +14,7 @@ use App\Officer;
 use App\DentalPlans;
 use App\Patient;
 use App\OfficersHasPatients;
+use App\Consults;
 
 class ClinicalConsultsController extends Controller
 {
@@ -79,7 +80,6 @@ class ClinicalConsultsController extends Controller
         $user = Auth::user(); 
 
         //$doctor = Doctor::where("users_id", $user->id)->get()[0];
-
         $input = json_decode($request->getContent());
 
         $specialities = DB::table('specialities')
@@ -96,9 +96,65 @@ class ClinicalConsultsController extends Controller
             ->where('officers.id', '=', $input->officers_id)
             ->get();
 
-        $data = ['plans' => $plans, "specialities" => $specialities];
+        $patients = DB::table('patients')
+            ->join('officers_has_patients', 'officers_has_patients.patients_id', '=', 'patients.id')
+            ->select('patients.*')
+            ->where('officers_has_patients.officers_id', '=', $input->officers_id)
+            ->get();
+
+        $data = ['plans' => $plans, "specialities" => $specialities, "patients" => $patients];
         //info(json_encode($data));
         return response()->json(['success'=>true, 'message' => "Cadastro efetuado com sucesso!" , 'data' => $data], $this->successStatus);
+    }
+
+    public function createConsult(Request $request)
+    {
+        info("CRIAR CONSULTA");
+        info(json_encode($request->all()));
+        $validator = Validator::make((array) json_decode($request->getContent()), [ 
+            'doctors_id' => 'numeric|min:1', 
+            'patients_id' => 'numeric|min:1', 
+            'officers_id' => 'numeric|min:1', 
+            'procediments' => 'required|min:10',
+            'started_at' => 'required',
+            'finished_at' => 'required' 
+        ]);
+
+        if ($validator->fails()) { 
+            return response()->json(['error'=>$validator->errors()], 401);            
+        }
+                
+        $input = json_decode($request->getContent());
+
+        $consult = Consults::create([
+            'doctors_id' => $input->doctors_id, 
+            'patients_id' => $input->patients_id, 
+            'officers_id' => $input->officers_id, 
+            'procediments' => $input->procediments,
+            'started_at' => date('Y-m-d h:i:s', strtotime( $input->started_at )),
+            'finished_at' => date('Y-m-d h:i:s', strtotime( $input->finished_at )),
+            'descriptions' => $input->descriptions,
+            'specialities_id' => $input->specialities_id,
+            'plans_id' => $input->plans_id,
+        ]);
+        
+        return response()->json(['success'=>true, 'message' => "Cadastro efetuado com sucesso!" , 'data' => $consult], $this->successStatus); 
+    }
+
+    function loadConsults(Request $request)
+    {   
+        $input = json_decode($request->getContent());
+        info(json_encode($request->all()));
+        $consults = DB::table('consults')
+            ->join('patients', 'patients.id', '=', 'consults.patients_id')
+            ->join('doctors', 'doctors.id', '=', 'consults.doctors_id')
+            ->join('officers', 'officers.id', '=', 'consults.officers_id')
+            ->leftJoin('dental_plans', 'dental_plans.id', '=', 'consults.plans_id')
+            ->leftJoin('specialities', 'specialities.id', '=', 'consults.specialities_id')
+            ->select('consults.*','officers.name as officer' ,'patients.name as patient', 'patients.celphone as celphone', 'patients.email as email', 'doctors.name as doctor')
+            ->whereBetween('consults.started_at', [$input->startDate, $input->endDate])->get();
+        info(json_encode($consults));
+        return response()->json(['success'=>true, 'message' => "Cadastro efetuado com sucesso!" , 'data' => $consults], $this->successStatus); 
     }
 
     function array_union($collect)

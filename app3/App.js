@@ -326,18 +326,37 @@ class Broadcast extends Component {
 }
 
 class Agenda extends Component {
-  
+ 
   static navigationOptions = {
     title: "",
     header: null
   };
 
   constructor(props) {
-    super(props);
     
+    super(props);
+    /* if(startDate != null)
+    {
+      this.setState({
+        selectedStartDate: startDate
+      });
+    }
+    if(endDate != null)
+    {
+      this.setState({
+        selectedEndDate: endDate
+      });
+    } */
+    /* this.setState({
+      officers: [],
+      doctors: [],
+      patients: [],
+      specialities: [],
+      plans: []
+    });  */
     this.onDateChange = this.onDateChange.bind(this);
   }
-  state = {
+  state = {   
     selectedStartDate: null,
     selectedEndDate: null,
     activity: false,
@@ -357,6 +376,11 @@ class Agenda extends Component {
     finished_at: "",
     descriptions: "",
     procediments: "",
+    patients_id: 0,
+    patients: [],
+    errors: [],
+    modalVisible: false,
+    consults: []
 
   };
 
@@ -369,25 +393,30 @@ class Agenda extends Component {
     await TokenManager.setToken('');
     this.props.navigation.navigate("Auth");
   }
-
-  onDateChange(date, type) {
-
+  setModalVisible(visible) {
+    this.setState({modalVisible: visible});
+  }
+  async onDateChange(date, type) {
+    console.log("TYPE: "+type);
+    Moment.locale('en');  
+    let data = Moment(date).format("YYYY-MM-DD");
     if (type === 'END_DATE') {
       this.setState({
-        selectedEndDate: date,
+        selectedEndDate: data,
       });
+      await this.loadConsults({'startDate': this.state.selectedStartDate+' 00:00:00', 'endDate': data+' 23:59:00'});
     } else {
       this.setState({
-        selectedStartDate: date,
+        selectedStartDate: data,
         selectedEndDate: null,
       });
-    }
+    }    
   }
 
   async loadOfficers()
   {
     var token = (await TokenManager.getToken());
-    this.setState({activity: true});
+    this.setState({activity: true, officers: []});
     fetch(host + "owner_clinical_consults/load_officers", {
         method: "POST",  
         body: JSON.stringify({}),
@@ -405,9 +434,44 @@ class Agenda extends Component {
                 errors: responseJson.error
             });
         } else {  
-            console.log(responseJson.data); 
+          
             this.setState({
               officers: responseJson.data
+            });
+         
+            
+        }
+    })
+    .catch((error) => {
+        this.setState({activity: false});
+        console.error(error);
+    });
+  }
+
+  async loadConsults(object)
+  {
+    var token = (await TokenManager.getToken());
+    this.setState({activity: true, consults: []});
+    fetch(host + "owner_clinical_consults/load_consults", {
+        method: "POST",  
+        body: JSON.stringify(object),
+        headers: {  
+            'Accept' : 'application/json',
+            'Content-Type': 'application/json; charset=utf-8' ,   
+            'Authorization': 'Bearer '+token,   
+        } 
+    }).then((response) => response.json())
+        .then(async responseJson => {
+            this.setState({activity: false});
+        if(responseJson.error){
+            this.setState({
+                modalVisible: true,
+                errors: responseJson.error
+            });
+        } else {  
+            //console.log(responseJson.data); 
+            this.setState({
+              consults: responseJson.data
             });
         }
     })
@@ -439,7 +503,7 @@ class Agenda extends Component {
                 errors: responseJson.error
             });
         } else {
-            console.log(responseJson.data); 
+            //console.log(responseJson.data); 
             this.setState({
               doctors: responseJson.data, officers_id: itemValue
             });
@@ -478,15 +542,64 @@ class Agenda extends Component {
             this.setState({
               doctors_id: itemValue,
               plans: responseJson.data.plans,
-              specialities: responseJson.data.specialities
+              specialities: responseJson.data.specialities,
+              patients: responseJson.data.patients
             });
         }
     })
     .catch((error) => {
-        this.setState({activity: false});
+        this.setState({activity: false});  
         console.error(error);
     });
   }
+
+  async createConsult()
+  {
+    
+    var token = (await TokenManager.getToken());
+    this.setState({activity: true});
+    fetch(host + "owner_clinical_consults/create_consult", {
+        method: "POST",  
+        body: JSON.stringify({
+          officers_id: this.state.officers_id,
+          doctors_id: this.state.doctors_id,
+          plans_id: this.state.plans_id,
+          specialities_id: this.state.specialities_id,
+          patients_id: this.state.patients_id,
+          descriptions: this.state.descriptions,
+          procediments: this.state.procediments,
+          started_at: this.state.started_at,
+          finished_at: this.state.finished_at
+
+        }),
+        headers: {  
+            'Accept' : 'application/json',
+            'Content-Type': 'application/json; charset=utf-8' ,   
+            'Authorization': 'Bearer '+token,   
+        } 
+    }).then((response) => response.json())
+        .then(async responseJson => {
+            this.setState({activity: false});
+        if(responseJson.error){
+            this.setState({
+                modalVisible: true,
+                errors: responseJson.error
+            });
+        } else {
+          this.setState({
+            modalVisible: false,
+            modalNewVisible: false
+            
+          });
+            this.props.navigation.navigate("Agenda", this.componentDidMount());
+        }
+    })
+    .catch((error) => {
+        this.setState({activity: false});  
+        console.error(error);
+    });
+  }
+
   showDateTimePicker = (field) => {
     //console.log(field);
     this.setState({ [field]: true , timeInput: field});
@@ -498,8 +611,9 @@ class Agenda extends Component {
   };
 
   handleDatePicked = (date) => {
-      Moment.locale('en');  
-      let data = Moment(date.date).format("MM-DD-YYYY HH:mm:ss");
+      Moment.locale('pt-BR');  
+      let data = Moment(date.date).format("YYYY-MM-DD HH:mm:ss");
+      console.log(data);
       this.setState({  
           [date.field]: data
       }); 
@@ -508,9 +622,9 @@ class Agenda extends Component {
 
   async componentDidMount()
   {
-    await this.loadOfficers();
+    
+    await this.loadOfficers() && await this.loadConsults(this.state);
   }
-
   newConsult()
   {
     this.setState({
@@ -518,10 +632,21 @@ class Agenda extends Component {
     });
   }
   
+  confirmStatus = (status) => 
+  {
+    Alert.alert(
+      'Atenção!',
+      'O paciente está '+status+ ' ?',
+      [
+        {text: 'NÃO', style: 'cancel'},
+        {text: 'SIM', onPress: () => this.updateStatus(status), style: 'cancel'},
+      ]
+    );
+  }
   render(){  
     const { selectedStartDate, selectedEndDate } = this.state;
     const minDate = new Date(2017, 12, 30); // Today
-    const maxDate = new Date(2019, 12, 31);
+    const maxDate = new Date(2025, 12, 31);
     const startDate  =  selectedStartDate ? selectedStartDate.toString() : '';
     const endDate = selectedEndDate ? selectedEndDate.toString() : '';
 
@@ -543,13 +668,59 @@ class Agenda extends Component {
               onRefresh={this.loadOfficers}
             />
           }>
+           
         <KeyboardAvoidingView behavior="padding" enabled key={this.state.uniqueValue}>
        
           
         <View style={styles.containerAgenda}>
-        
+          <View style={
+              {
+                alignContent: 'flex-start',
+                alignItems: 'flex-start',
+                paddingBottom: 10
+              }
+            }>
+              <Text style={{fontSize:18, color:'white', fontWeight: 'bold'}}>Agenda Médica</Text>
+            </View>
+          <Modal
+            animationType="slide"
+            transparent={false}
+            visible={this.state.modalVisible}>
+                <View style={{
+                    flex: 1,
+                    backgroundColor: '#01142F',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    paddingTop:50,
+                    paddingLeft: 20,
+                    paddingRight: 20
+                }}>
+                     
+                    <Image style={styles.appImageMd} source={{ uri: 'http://odontologiadrkikuchi.com.br/wp-content/uploads/2017/03/cropped-tooth-icon.png' }} />
+                    <Text style={{
+                        marginTop: 15,
+                        color: '#FFC11E',
+                        fontWeight: 'bold',
+                        fontSize: 25,
+                        textShadowColor: 'darkblue',
+                        letterSpacing: 5
+                    }}>Atenção!</Text>
+                    
+                    {Object.entries(this.state.errors).map(([key,v])=>{
+                        return <Text key={key} style={{color: "#F1F2F2", fontWeight: 'bold'}}>{v}</Text>
+                    })}
+                
+                    <TouchableHighlight
+                    style={styles.btn}
+                    onPress={() => {
+                        this.setModalVisible(!this.state.modalVisible);
+                    }}>
+                        <Text>Tentar Novamente</Text>
+                    </TouchableHighlight>
+                </View>
+            </Modal>
             
-          <View style={{backgroundColor: '#E5F0FF', borderRadius: 10}}>
+          <View style={{backgroundColor: '#E5F0FF', borderRadius: 10, paddingTop:5}}>
             <CalendarPicker
               startFromMonday={true}
               allowRangeSelection={true}
@@ -566,18 +737,16 @@ class Agenda extends Component {
               onDateChange={this.onDateChange}
             />
           </View>
-
-          <View>
-            <Text>SELECTED START DATE:{ startDate }</Text>
-            <Text>SELECTED END DATE:{ endDate }</Text>
-          </View>
-          <TouchableOpacity onPress={()=> this.logOff()} style={styles.btnCancel}>
-              <Text style={styles.textColor}>Sair</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={()=> this.newConsult()} style={styles.btnSave}>
+          <TouchableOpacity onPress={()=> this.newConsult()} style={styles.btnPerfil}>
               <Text style={styles.textColor}>Nova consulta</Text>
           </TouchableOpacity>
-          
+          <View>
+            <Text style={{fontSize:8}}>Data inicial: <Text style={{color:'yellow', fontSize:10, fontWeight:'bold'}}>{ startDate }</Text>  </Text>
+          </View>
+          <View>
+            <Text style={{fontSize:8}}>Data Final: <Text style={{color:'yellow', fontSize:10, fontWeight:'bold'}}>{ endDate }</Text>  </Text>
+          </View>
+
           <Modal
             animationType="slide"
             transparent={false}
@@ -593,6 +762,15 @@ class Agenda extends Component {
                   paddingRight: 20
                 }}>
                   <ScrollView>
+                  <View style={
+                  {
+                    alignContent: 'flex-start',
+                    alignItems: 'flex-start',
+                    paddingBottom: 10
+                  }
+                }>
+                  <Text style={{fontSize:18, color:'white', fontWeight: 'bold'}}>Nova Conculta</Text>
+                </View>
                   {/* {<Image style={styles.appImageMd} source={{ uri: 'http://odontologiadrkikuchi.com.br/wp-content/uploads/2017/03/cropped-tooth-icon.png' }} /> } */}
                   
                   <View style={{flex:.1, alignSelf: "stretch", justifyContent:'center', height: 50,
@@ -628,6 +806,27 @@ class Agenda extends Component {
                     </Picker>
                     </View>
                     </View> : null} 
+
+                    { this.state.doctors_id > 0 ?  <View style={{flex:.1, alignSelf: "stretch", justifyContent:'center', height: 50,
+                    borderBottomWidth: 2, 
+                    borderBottomColor: "#fff",
+                    color: "#fff",
+                    marginBottom: 10}}><View>
+                    
+                    <Picker style={{color:"#fff"}}
+                          selectedValue={this.state.patients_id}
+                          onValueChange={(itemValue, itemIndex) => this.setState({patients_id : itemValue}) }>
+                            <Picker.Item key={0} value={0} label={'Selecione um paciente'} />
+                              {this.state.patients.map((patient, i) => { 
+                                  return <Picker.Item key={i} value={patient.id} label={patient.name } />
+                              })}
+                        </Picker>
+                      
+                    </View>
+
+                    </View> 
+
+                    : null} 
 
                     { this.state.doctors_id > 0 ?  <View style={{flex:.1, alignSelf: "stretch", justifyContent:'center', height: 50,
                     borderBottomWidth: 2, 
@@ -765,12 +964,10 @@ class Agenda extends Component {
 
                     : null}
 
-                     
-                  
-
-                        
-                  
-                  <TouchableOpacity style={styles.btnSave}>
+                  <TouchableOpacity style={styles.btnSave}
+                   onPress={() => {
+                    this.createConsult();
+                    }}>
                       <Text style={styles.textColor}>Agendar</Text>
                   </TouchableOpacity>
                   <TouchableOpacity onPress={()=> this.setState({modalNewVisible:false})} style={styles.btnCancel}>
@@ -782,7 +979,137 @@ class Agenda extends Component {
                 
           </Modal>
           
-         
+          { this.state.consults.length > 0 ? 
+            this.state.consults.map((consult, i) => { 
+              return <View 
+                      key={consult.id}
+                      style={{
+                          backgroundColor: "#052555",
+                          borderRadius: 10,
+                          padding:10,
+                          marginTop:10,
+                          alignSelf: "center",
+                          alignItems: "stretch",
+                          flex: 1,
+                          flexDirection: 'column',
+                          justifyContent: 'center',
+                          width:Dimensions.get('window').width - 10,
+                      }}> 
+                      {/* <View style={{backgroundColor: 'powderblue',  alignItems: "stretch",}}> */}
+                          <Text style={{alignSelf:"center"}}>
+                          <Ionicons name="ios-contact" size={50} color={"#5199FF"}  />
+                          </Text>
+                          <Text style={{
+                          alignSelf: 'center',
+                          flex: 1,
+                          color: 'white',
+                          fontSize:14,
+                          fontWeight: 'bold'
+                          }}> {consult.patient}</Text>
+                          <View>
+                            <Text style={{fontSize:8, alignSelf: 'center', color: 'white'}}>de: <Text style={{color:'#FFC11E', fontSize:10, fontWeight:'bold'}}>{ Moment(consult.started_at).format("DD/MM/YYYY HH:mm") }</Text> até: <Text style={{color:'#FFC11E', fontSize:10, fontWeight:'bold'}}>{Moment(consult.finished_at).format("HH:mm") }</Text></Text>
+                          </View>
+                          <View>
+                            <Text style={{fontSize:8, alignSelf: 'center', color: 'white'}}>consultório: <Text style={{color:'#F1F2F2', fontSize:10, fontWeight:'bold'}}>{ consult.officer }</Text> dentista:  <Text style={{color:'#F1F2F2', fontSize:10, fontWeight:'bold'}}>{ consult.doctor }</Text></Text>
+                          </View>
+                          <View>
+                            <Text style={{fontSize:8, alignSelf: 'center', color: 'white'}}>email: <Text style={{color:'#F1F2F2', fontSize:10, fontWeight:'bold'}}>{ consult.email }</Text> telefone:  <Text style={{color:'#F1F2F2', fontSize:10, fontWeight:'bold'}}>{ consult.celphone }</Text></Text>
+                          </View>
+                          <View>
+                            <Text style={{fontSize:8, alignSelf: 'center', color: 'white'}}>procedimentos: <Text style={{color:'#F1F2F2', fontSize:10, fontWeight:'bold'}}>{ consult.procediments }</Text></Text>
+                          </View>
+                          {/* <Text style={[styles.textDivisor, {marginTop:10, alignSelf:'center'}]}><Ionicons name="md-map" size={12} color={"#5199FF"} /> {pacient.city} - {pacient.address}, {pacient.number}</Text>
+                          
+                          <Text style={[styles.textDivisor, {marginTop:10, alignSelf:'center'}]}> <Ionicons name="md-phone-portrait" size={12} color={"#5199FF"} /> {pacient.celphone} <Ionicons name="md-mail" size={12} color={"#5199FF"} /> {pacient.email}</Text>
+                          */
+                          <View 
+                              key={consult.id}
+                              style={{
+                                  backgroundColor: "#052555",
+                                  borderRadius: 10,
+                                  padding:15,
+                                  marginTop:10,
+                                  alignSelf: "center",
+                                  alignItems: "center",
+                                  flex: 1,
+                                  flexDirection: 'row',
+                                  justifyContent: 'center',
+                              }}> 
+                          <TouchableHighlight
+                              style={[styles.btnOptionsEdit, {marginLeft:10}]}
+                              onPress={
+                                (status) => {
+                                  this.confirmStatus('ausente');
+                                  }
+                              }>
+                              <View>
+                                  <Ionicons name="ios-alarm" size={18} color={"#FFFFFF"} />
+                              </View>
+                          </TouchableHighlight>
+                          <TouchableHighlight
+                              style={[styles.btnOptionsSuccess, {marginLeft:10}]}
+                              onPress={
+                                (status) => {
+                                  this.confirmStatus('confirmado');
+                                  }
+                              }>
+                              <View>
+                                  <Ionicons name="ios-checkmark-circle" size={18} color={"#FFFFFF"} />
+                              </View>
+                          </TouchableHighlight>
+                          <TouchableHighlight
+                              style={[styles.btnOptionsCalendar, {marginLeft:10}]}
+                              >
+                              <View>
+                                  <Ionicons name="md-calendar" size={18} color={"#FFFFFF"} />
+                              </View>
+                          </TouchableHighlight>
+                          <TouchableHighlight
+                              style={[styles.btnOptionsDelete, {marginLeft:10}]}
+                              onPress={
+                                (status) => {
+                                  this.confirmStatus('cancelado');
+                                  }
+                              }>
+                              <View>
+                                  <Ionicons name="md-trash" size={18} color={"#FFFFFF"} />
+                              </View>
+                          </TouchableHighlight>
+                          </View> }
+                          
+                      {/*  </View> */}     
+                      </View>  
+                  })
+          : <View 
+          key={1}
+          style={{
+              backgroundColor: "#B7D4FF",
+              borderRadius: 10,
+              padding:10,
+              marginTop:10,
+              alignSelf: "center",
+              alignItems: "stretch",
+              flex: 1,
+              flexDirection: 'column',
+              justifyContent: 'center',
+              width:Dimensions.get('window').width - 10,
+          }}> 
+          {/* <View style={{backgroundColor: 'powderblue',  alignItems: "stretch",}}> */}
+              <Text style={{alignSelf:"center"}}>
+              <Ionicons name="ios-contact" size={50} color={"#5199FF"}  />
+              </Text>
+              <Text style={{
+              alignSelf: 'center',
+              flex: 1,
+              color: '#7EB3FF',
+              fontSize:14,
+              fontWeight: 'bold'
+              }}> {'aguardando pacientes'}</Text></View>}
+                    
+          
+                <TouchableOpacity onPress={()=> this.logOff()} style={styles.btnCancel}>
+                    <Text style={styles.textColor}>Sair</Text>
+                </TouchableOpacity>
         </View>
         
         </KeyboardAvoidingView>
@@ -995,11 +1322,11 @@ const styles = StyleSheet.create({
   containerAgenda: {
     flex: 1,
     backgroundColor: '#5199FF',
-    alignItems: 'center',
+    alignItems: 'stretch',
     //justifyContent: 'center',
-    paddingLeft: 50,
-    paddingRight: 50,
-    paddingTop: 50
+    paddingLeft: 10,
+    paddingRight: 10,
+    paddingTop: 30
   },
   containerForm: {
     flex: 1,

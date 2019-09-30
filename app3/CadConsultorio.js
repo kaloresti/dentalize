@@ -376,6 +376,25 @@ export default class Consultorio extends Component {
         return (
          
             <KeyboardAvoidingView behavior="padding" enabled style={styles.containerForm} key={this.state.uniqueValue}>
+              <View style={{
+                                alignContent: 'flex-start',
+                                alignItems: 'flex-start',
+                                flexDirection: 'column',
+                                paddingBottom: 10
+                            }}>
+                            <Text style={{fontSize:18, color:'white', fontWeight: 'bold'}}>Meus Consultórios</Text>
+                            <TouchableHighlight
+                                style={[styles.btnPerfil]}
+                                onPress={() => {
+                                    this.setModalNewVisible(true);
+                                }}>
+                                    <View>
+                                        <Text>
+                                            <Ionicons name="ios-add-circle" size={20} color={"#5199FF"}  />
+                                        </Text>
+                                    </View>
+                                </TouchableHighlight>
+                        </View>
                <ScrollView
                refreshControl={
                 <RefreshControl
@@ -383,7 +402,7 @@ export default class Consultorio extends Component {
                   onRefresh={this._onRefresh}
                 />
               }>
-                  <View style={{alignSelf:"center", alignContent:"center", alignItems:"center"}}>
+                  {/* <View style={{alignSelf:"center", alignContent:"center", alignItems:"center"}}>
                     <Text style={{fontSize:18, color:"#052555", alignContent:"center"}}>Consultórios</Text>
                     <TouchableHighlight
                       style={[styles.btnNew, {backgroundColor: "#052555"}]}
@@ -396,7 +415,7 @@ export default class Consultorio extends Component {
                           </Text>
                         </View>
                     </TouchableHighlight>
-                  </View>
+                  </View> */}
                 <Modal
                   animationType="slide"
                   transparent={false}
@@ -769,7 +788,7 @@ export default class Consultorio extends Component {
                                         key={invite.id}
                                         style={{
                                             backgroundColor: "#460000",
-                                            borderRadius: 10,
+                                            borderRadius: 50,
                                             padding:5,
                                             marginTop:10,
                                             alignSelf: "center",
@@ -777,7 +796,7 @@ export default class Consultorio extends Component {
                                             flex: 1,
                                             flexDirection: 'column',
                                             justifyContent: 'center',
-                                            width:Dimensions.get('window').width - 50,
+                                            width:Dimensions.get('window').width - 10,
                                         }}> 
                                         {/* <View style={{backgroundColor: 'powderblue',  alignItems: "stretch",}}> */}
                                             <Text style={{alignSelf:"center"}}>
@@ -864,7 +883,7 @@ export default class Consultorio extends Component {
                               key={consultorio.id}
                               style={{
                                 backgroundColor: "#052555",
-                                borderRadius: 10,
+                                borderRadius: 50,
                                 padding:5,
                                 marginTop:10,
                                 alignSelf: "center",
@@ -872,7 +891,7 @@ export default class Consultorio extends Component {
                                 flex: 1,
                                 //flexDirection: 'column',
                                 justifyContent: 'center',
-                                width:Dimensions.get('window').width - 50,
+                                width:Dimensions.get('window').width - 10,
                               }}> 
                               {/* <View style={{backgroundColor: 'powderblue',  alignItems: "stretch",}}> */}
                                 <Text style={{alignSelf:"center"}}>
@@ -965,11 +984,11 @@ export default class Consultorio extends Component {
     containerForm: {
       flex: 1,
       backgroundColor: '#5199FF',
-      alignItems: 'center',
+      alignItems: 'flex-start',
       //justifyContent: 'center',
-      paddingLeft: 5,
-      paddingRight: 5,
-      paddingTop: 50
+      paddingLeft: 10,
+      paddingRight: 10,
+      paddingTop: 35
     },
     containerLoading: {
       flex: 1,
@@ -1107,13 +1126,14 @@ export default class Consultorio extends Component {
       fontWeight:"bold"
     },
     btnPerfil: {
-      backgroundColor: "#3095f3",
+      backgroundColor: "#0351C1",
       borderRadius: 10,
       padding: 10,
       marginTop:15,
       alignSelf: "stretch",
       justifyContent: "center",
-      alignItems: "center"
+      alignItems: "center",
+      flexDirection: 'column'
     },
     textColor: {
         color: "#fff",

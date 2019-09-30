@@ -283,6 +283,25 @@ export default class CadConvite extends Component {
                 return (
                     
                     <KeyboardAvoidingView behavior="padding" enabled  style={styles.containerForm}>
+                        <View style={{
+                                alignContent: 'flex-start',
+                                alignItems: 'flex-start',
+                                flexDirection: 'column',
+                                paddingBottom: 10
+                            }}>
+                            <Text style={{fontSize:18, color:'white', fontWeight: 'bold'}}>Meus Auxiliares</Text>
+                            <TouchableHighlight
+                                style={[styles.btnPerfil]}
+                                onPress={() => {
+                                    this.setModalNewVisible(true);
+                                }}>
+                                    <View>
+                                        <Text>
+                                            <Ionicons name="ios-add-circle" size={20} color={"#5199FF"}  />
+                                        </Text>
+                                    </View>
+                                </TouchableHighlight>
+                        </View>
                         <ScrollView
                          refreshControl={
                             <RefreshControl
@@ -290,20 +309,7 @@ export default class CadConvite extends Component {
                               onRefresh={this._onRefresh}
                             />
                           }>
-                                <View style={{alignSelf:"center", alignContent:"center", alignItems:"center"}}>
-                                  <Text style={{fontSize:18, color:"#052555", alignContent:"center"}}>Auxiliares</Text>
-                                  <TouchableHighlight
-                                    style={[styles.btnNew, {backgroundColor: "#052555"}]}
-                                    onPress={() => {
-                                        this.setModalNewVisible(true);
-                                    }}>
-                                        <View>
-                                        <Text style={{alignSelf:"center"}}>
-                                            <Ionicons name="ios-add-circle" size={40} color={"#5199FF"}  />
-                                        </Text>
-                                        </View>
-                                </TouchableHighlight>
-                                </View>
+                               
                               
 
                     <Modal
@@ -436,7 +442,7 @@ export default class CadConvite extends Component {
                                         key={invite.id}
                                         style={{
                                             backgroundColor: "#052555",
-                                            borderRadius: 10,
+                                            borderRadius: 20,
                                             padding:5,
                                             marginTop:10,
                                             alignSelf: "center",
@@ -444,7 +450,7 @@ export default class CadConvite extends Component {
                                             flex: 1,
                                             flexDirection: 'column',
                                             justifyContent: 'center',
-                                            width:Dimensions.get('window').width - 50,
+                                            width:Dimensions.get('window').width - 10,
                                         }}> 
                                         {/* <View style={{backgroundColor: 'powderblue',  alignItems: "stretch",}}> */}
                                             <Text style={{alignSelf:"center"}}>
@@ -519,7 +525,7 @@ export default class CadConvite extends Component {
                                         key={invite.id}
                                         style={{
                                             backgroundColor: "#460000",
-                                            borderRadius: 10,
+                                            borderRadius: 20,
                                             padding:5,
                                             marginTop:10,
                                             alignSelf: "center",
@@ -527,7 +533,7 @@ export default class CadConvite extends Component {
                                             flex: 1,
                                             flexDirection: 'column',
                                             justifyContent: 'center',
-                                            width:Dimensions.get('window').width - 50,
+                                            width:Dimensions.get('window').width - 10,
                                         }}> 
                                         {/* <View style={{backgroundColor: 'powderblue',  alignItems: "stretch",}}> */}
                                             <Text style={{alignSelf:"center"}}>
@@ -620,13 +626,13 @@ export default class CadConvite extends Component {
       paddingTop: 50
     },
     containerForm: {
-      flex: 1,
-      backgroundColor: '#5199FF',
-      alignItems: 'center',
-      //justifyContent: 'center',
-      paddingLeft: 20,
-      paddingRight: 20,
-      paddingTop: 50
+        flex: 1,
+        backgroundColor: '#5199FF',
+        alignItems: 'flex-start',
+        //justifyContent: 'center',
+        paddingLeft: 10,
+        paddingRight: 10,
+        paddingTop: 35
     },
     containerLoading: {
       flex: 1,
@@ -744,13 +750,14 @@ export default class CadConvite extends Component {
       marginTop: 40
     },
     btnPerfil: {
-      backgroundColor: "#3095f3",
-      borderRadius: 10,
-      padding: 10,
-      marginTop:15,
-      alignSelf: "stretch",
-      justifyContent: "center",
-      alignItems: "center"
+        backgroundColor: "#0351C1",
+        borderRadius: 10,
+        padding: 10,
+        marginTop:15,
+        alignSelf: "stretch",
+        justifyContent: "center",
+        alignItems: "center",
+        flexDirection: 'column'
     },
     textColor: {
         color: "#fff",

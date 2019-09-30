@@ -303,6 +303,25 @@ export default class Paciente extends Component {
           return (
               
                 <KeyboardAvoidingView behavior="padding" enabled style={styles.containerForm} key={this.state.uniqueValue}>
+                    <View style={{
+                                alignContent: 'flex-start',
+                                alignItems: 'flex-start',
+                                flexDirection: 'column',
+                                paddingBottom: 10
+                            }}>
+                            <Text style={{fontSize:18, color:'white', fontWeight: 'bold'}}>Meus Pacientes</Text>
+                            <TouchableHighlight
+                                style={[styles.btnPerfil]}
+                                onPress={() => {
+                                    this.setModalNewVisible(true);
+                                }}>
+                                    <View>
+                                        <Text>
+                                            <Ionicons name="ios-add-circle" size={20} color={"#5199FF"}  />
+                                        </Text>
+                                    </View>
+                                </TouchableHighlight>
+                        </View>
                     <ScrollView
                     refreshControl={
                         <RefreshControl
@@ -310,20 +329,10 @@ export default class Paciente extends Component {
                           onRefresh={this._onRefresh}
                         />
                       }>
-                          <View style={{alignSelf:"center", alignContent:"center", alignItems:"center"}}>
-                    <Text style={{fontSize:18, color:"#052555", alignContent:"center"}}>Pacientes</Text>
-                    <TouchableHighlight
-                      style={[styles.btnNew, {backgroundColor: "#052555"}]}
-                      onPress={() => {
-                        this.setModalNewVisible(true);
-                      }}>
-                        <View>
-                          <Text style={{alignSelf:"center"}}>
-                            <Ionicons name="ios-add-circle" size={40} color={"#5199FF"}  />
-                          </Text>
-                        </View>
-                    </TouchableHighlight>
-                  </View>
+                          
+                        
+                    
+                  
                     <Modal
                         animationType="slide"
                         transparent={false}
@@ -375,10 +384,13 @@ export default class Paciente extends Component {
                                         paddingLeft: 20,
                                         paddingRight: 20
                                     }}>
-                                         <View style={{alignSelf:"center", alignContent:"center", alignItems:"center"}}>
-                                  <Text style={{fontSize:18, color:"#E5F0FF", alignContent:"center"}}>Novo Paciente</Text>
-                                  
-                                </View>
+                                        <View style={{
+                                                alignContent: 'flex-start',
+                                                alignItems: 'flex-start',
+                                                paddingBottom: 10
+                                            }}>
+                                            <Text style={{fontSize:18, color:'white', fontWeight: 'bold'}}>Novo Paciente</Text>
+                                        </View>
                                     {/* <Image style={styles.appImageMd} source={{ uri: 'http://odontologiadrkikuchi.com.br/wp-content/uploads/2017/03/cropped-tooth-icon.png' }} /> */}
                                             <Text style={[styles.textDivisor, {color: 'yellow'}]}>Escolha um consultório</Text>
                                             <View style={{flex:.5, alignSelf: "stretch", justifyContent:'center', height: 40,
@@ -595,7 +607,7 @@ export default class Paciente extends Component {
                         </Modal>                     
                         
                             
-                            <View style={{flex:.5, alignSelf: "stretch", justifyContent:'center', height: 40,
+                           {/*  <View style={{flex:.5, alignSelf: "stretch", justifyContent:'center', height: 40,
                                 borderBottomWidth: 2, 
                                 borderBottomColor: "#fff",
                                 color: "#fff",
@@ -629,22 +641,22 @@ export default class Paciente extends Component {
                                 {this.state.searchPlans.map((plan, i) => { 
                                     return <Picker.Item key={i} value={plan.id} label={plan.name } />
                                 })}
-                            </Picker>
-                            </View>
+                            </Picker> 
+                            </View>*/}
                             {this.state.pacientes.map((pacient, i) => { 
                                 return <View 
                                         key={pacient.id}
                                         style={{
                                             backgroundColor: "#052555",
-                                            borderRadius: 10,
-                                            padding:15,
+                                            borderRadius: 20,
+                                            padding:10,
                                             marginTop:10,
                                             alignSelf: "center",
                                             alignItems: "stretch",
                                             flex: 1,
                                             flexDirection: 'column',
                                             justifyContent: 'center',
-                                            width:Dimensions.get('window').width - 50,
+                                            width:Dimensions.get('window').width - 10,
                                         }}> 
                                         {/* <View style={{backgroundColor: 'powderblue',  alignItems: "stretch",}}> */}
                                             <Text style={{alignSelf:"center"}}>
@@ -721,8 +733,8 @@ const styles = StyleSheet.create({
       backgroundColor: '#5199FF',
       alignItems: 'center',
       justifyContent: 'center',
-      paddingLeft: 20,
-      paddingRight: 20
+      paddingLeft: 10,
+      paddingRight: 10
     },
     containerAgenda: {
       flex: 1,
@@ -736,11 +748,11 @@ const styles = StyleSheet.create({
     containerForm: {
       flex: 1,
       backgroundColor: '#5199FF',
-      alignItems: 'center',
+      alignItems: 'flex-start',
       //justifyContent: 'center',
-      paddingLeft: 20,
-      paddingRight: 20,
-      paddingTop: 50
+      paddingLeft: 10,
+      paddingRight: 10,
+      paddingTop: 35
     },
     containerLoading: {
       flex: 1,
@@ -833,9 +845,9 @@ const styles = StyleSheet.create({
       borderRadius: 55,
       padding: 5,
       width: 50,
-      //alignSelf: "stretch",
-      justifyContent: "center",
-      alignItems: "center",
+      alignSelf: "flex-end",
+      justifyContent: 'flex-end',
+      alignItems: "flex-end",
       //marginTop: 10
     },
     btnSave: {
@@ -849,13 +861,14 @@ const styles = StyleSheet.create({
       marginTop: 40
     },
     btnPerfil: {
-      backgroundColor: "#3095f3",
+      backgroundColor: "#0351C1",
       borderRadius: 10,
       padding: 10,
       marginTop:15,
       alignSelf: "stretch",
       justifyContent: "center",
-      alignItems: "center"
+      alignItems: "center",
+      flexDirection: 'column'
     },
     textColor: {
         color: "#fff",
