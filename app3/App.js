@@ -555,7 +555,6 @@ class Agenda extends Component {
 
   async createConsult()
   {
-    
     var token = (await TokenManager.getToken());
     this.setState({activity: true});
     fetch(host + "owner_clinical_consults/create_consult", {
@@ -632,17 +631,56 @@ class Agenda extends Component {
     });
   }
   
-  confirmStatus = (status) => 
+  confirmStatus = (status, idConsulta) => 
   {
     Alert.alert(
       'Atenção!',
       'O paciente está '+status+ ' ?',
       [
         {text: 'NÃO', style: 'cancel'},
-        {text: 'SIM', onPress: () => this.updateStatus(status), style: 'cancel'},
+        {text: 'SIM', onPress: () => this.updateStatus(status, idConsulta), style: 'cancel'},
       ]
     );
   }
+
+  updateStatus(status, idConsulta)
+  {
+    var token = (await TokenManager.getToken());
+    this.setState({activity: true});
+    fetch(host + "owner_clinical_consults/update_status", {
+        method: "POST",  
+        body: JSON.stringify({
+         consult_id: idConsulta,
+         status: status
+        }),
+        headers: {  
+            'Accept' : 'application/json',
+            'Content-Type': 'application/json; charset=utf-8' ,   
+            'Authorization': 'Bearer '+token,   
+        } 
+    }).then((response) => response.json())
+        .then(async responseJson => {
+            this.setState({activity: false});
+        if(responseJson.error){
+            this.setState({
+                modalVisible: true,
+                errors: responseJson.error
+            });
+        } else {
+          this.setState({
+            modalVisible: false,
+            modalNewVisible: false
+            
+          });
+            this.props.navigation.navigate("Agenda", this.componentDidMount());
+        }
+    })
+    .catch((error) => {
+        this.setState({activity: false});  
+        console.error(error);
+    });
+  }
+
   render(){  
     const { selectedStartDate, selectedEndDate } = this.state;
     const minDate = new Date(2017, 12, 30); // Today
@@ -1039,7 +1077,7 @@ class Agenda extends Component {
                               style={[styles.btnOptionsEdit, {marginLeft:10}]}
                               onPress={
                                 (status) => {
-                                  this.confirmStatus('ausente');
+                                  this.confirmStatus('ausente', consult.id);
                                   }
                               }>
                               <View>
@@ -1050,7 +1088,7 @@ class Agenda extends Component {
                               style={[styles.btnOptionsSuccess, {marginLeft:10}]}
                               onPress={
                                 (status) => {
-                                  this.confirmStatus('confirmado');
+                                  this.confirmStatus('confirmado', consult.id);
                                   }
                               }>
                               <View>
@@ -1068,7 +1106,7 @@ class Agenda extends Component {
                               style={[styles.btnOptionsDelete, {marginLeft:10}]}
                               onPress={
                                 (status) => {
-                                  this.confirmStatus('cancelado');
+                                  this.confirmStatus('cancelado', consult.id);
                                   }
                               }>
                               <View>
