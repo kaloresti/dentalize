@@ -50,4 +50,12 @@ Route::group(['middleware' => 'auth:api'], function(){
     Route::post('owner_clinical_consults/load_create_consult', 'API\ClinicalConsultsController@loadCreateConsult');
     Route::post('owner_clinical_consults/create_consult', 'API\ClinicalConsultsController@createConsult');
     Route::post('owner_clinical_consults/load_consults', 'API\ClinicalConsultsController@loadConsults');
+    Route::post('owner_clinical_consults/update_status', 'API\ClinicalConsultsController@updateStatus');
+
+    Route::post('helper_clinical_consults/load_officers', 'API\ClinicalConsultsController@loadOfficersHelpers');
+    Route::post('helper_clinical_consults/load_doctors', 'API\ClinicalConsultsController@loadDoctorsHelpers');
+    Route::post('helper_clinical_consults/load_create_consult', 'API\ClinicalConsultsController@loadCreateConsultHelpers');
+    Route::post('helper_clinical_consults/create_consult', 'API\ClinicalConsultsController@createConsultHelpers');
+    Route::post('helper_clinical_consults/load_consults', 'API\ClinicalConsultsController@loadConsultHelpers');
+    Route::post('helper_clinical_consults/update_status', 'API\ClinicalConsultsController@updateStatusHelpers');
 });

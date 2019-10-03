@@ -157,6 +157,18 @@ class ClinicalConsultsController extends Controller
         return response()->json(['success'=>true, 'message' => "Cadastro efetuado com sucesso!" , 'data' => $consults], $this->successStatus); 
     }
 
+    public function updateStatus(Request $request)
+    {
+        $input = json_decode($request->getContent());
+        info(json_encode($request->all()));
+
+        $consults = Consults::where("id", $input->consults_id)->update([
+            "status" => $input->status
+        ]);
+
+        return response()->json(['success'=>true, 'message' => "Cadastro efetuado com sucesso!" , 'data' => $consults], $this->successStatus);
+    }
+
     function array_union($collect)
     { 
         $return = [];
