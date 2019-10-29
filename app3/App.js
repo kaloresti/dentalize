@@ -643,7 +643,7 @@ class Agenda extends Component {
     );
   }
 
-  updateStatus(status, idConsulta)
+  async updateStatus(status, idConsulta)
   {
     var token = (await TokenManager.getToken());
     this.setState({activity: true});
